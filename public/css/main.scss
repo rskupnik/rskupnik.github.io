@@ -50,6 +50,7 @@ ul, ol {
 
 img {
   max-width: 100%;
+  width: 100%;
   height: auto;
   border: none;
   outline: none;
@@ -246,6 +247,14 @@ dl,
   background-size: 90px 90px;
   background-position: left center;
   background-repeat: no-repeat;
+}
+
+img + em {
+	color: gray;
+    font-size: 16px;
+    text-align: center;
+    display: block;
+    margin-top: -20px;
 }
 
 /*============================================================================*/
