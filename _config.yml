@@ -5,8 +5,8 @@ description: A blog on various topics related to programming
 highlighter: null
 permalink: /:title
 
-url: http://github.com/rskupnik
-baseurl: rskupnik.github.io
+url: https://rskupnik.github.io
+baseurl: 
 
 sass:
   sass_dir: public/css
