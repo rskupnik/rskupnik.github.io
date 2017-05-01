@@ -6,7 +6,7 @@ highlighter: null
 permalink: /:title
 
 url: http://github.com/rskupnik
-baseurl: /
+baseurl: rskupnik.github.io
 
 sass:
   sass_dir: public/css
