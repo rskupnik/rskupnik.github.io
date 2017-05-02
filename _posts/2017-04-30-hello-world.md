@@ -18,4 +18,4 @@ There also seems to be some kind of a tradition that people making blogs using J
 
 I also promise to not overuse the :) emote as much as I did in this post.
 
-Stay tuned and remember to have fun, whatever you're doing! (unless it's illegal or something, then you should not have any fun doing it)
+Stay tuned and remember to have fun, whatever you're doing! (unless it's illegal or something, then you should not :) )
