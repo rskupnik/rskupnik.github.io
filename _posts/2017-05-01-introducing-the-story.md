@@ -8,7 +8,7 @@ title: Introducing The Story - a modern text-based RPG
 Now, when you hear the term "text-based game" you probably conjure images like such.
 
 ![Otchłań]({{site.baseurl}}/public/images/otchlan_1.jpg)
-*Ain't those some pretty letters, though incomprehensible to most of you :)*
+*Ain't those some pretty letters, though probably incomprehensible to most of you :)*
 
 This screenshot is from the game [Otchłań](http://otchlan.pl/) - a Polish Single User Dungeon game.
 

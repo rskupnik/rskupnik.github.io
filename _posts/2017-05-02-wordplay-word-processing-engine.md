@@ -29,6 +29,7 @@ The order is important because it means you can inject valid Wordplay script tha
 Alright, here come some screenshots and explanations.
 
 ![Wordplay]({{site.baseurl}}/public/images/wordplay_1.png)
+*Damn, those ugly arrows*
 
 In the **first** line, we have a classic ternary expression. Based on the boolean value of the variable *weather_sunny* we output either *sunny* or *rainy*. A keen mind might think at this point - what if I can have multiple weather conditions in my game, do I need to provide a *weather_xxx* for each of those and set them accordingly? Well, no, the ternary expression on the screenshot is a *shorthand* version, the full version includes a value that the variable should have:
 
@@ -51,6 +52,7 @@ The **sixth** line, below the delimiter, is a compliment to the **third** line. 
 By utilizing the **internal object injection** mechanism, we can make the text much more readable by separating code from data:
 
 ![Wordplay]({{site.baseurl}}/public/images/wordplay_2.png)
+*At least those aren't crossing the words, I'm getting better at it*
 
 All the code has been moved below the delimiter and the text itself only containes indexed internally injected objects. Yet again, this is possible because **injection happens before processing**.
 
