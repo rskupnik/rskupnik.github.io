@@ -58,6 +58,8 @@ Additional feature presented on this screenshot is **object emission**. *But we 
 
 ---
 
-That's pretty much it for the first version of **Wordplay**. I will post a link to the github project here as soon as I actually start implementing it :)
+That's pretty much it for the first version of **Wordplay**. I have a bad feeling in my stomach that I have missed something important in this design that will come out during implementation and bite me hard :) Not a reason to stop trying, though!
+
+I will post a link to the github project here as soon as I actually start implementing it :)
 
 See you in the next post, and remember to have fun! :)
