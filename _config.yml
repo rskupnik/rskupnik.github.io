@@ -12,4 +12,4 @@ sass:
   sass_dir: public/css
   style: :compressed
   
-show_drafts: true
+show_drafts: false
