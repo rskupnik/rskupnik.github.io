@@ -239,6 +239,12 @@ dl,
     clear: both;
 }
 
+hr + h2 {
+	text-align: center;
+	display: block;
+	margin-top: -10px;
+}
+
 /*============================================================================*/
 #logo {
   display: inline-block;
