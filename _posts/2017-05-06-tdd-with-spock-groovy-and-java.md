@@ -6,7 +6,7 @@ title: TDD with Spock, Groovy and Java
 ---
 ## Introduction
 
-[**TDD**](https://en.wikipedia.org/wiki/Test-driven_development) stands for **test-driven development**. The concept is very simple: given a **specification**, you first write **tests** that fulfil that specification and **fail** (because there is no implementation) and then implement code to make the tests **pass** (and thus, satisfy the specification).
+[**TDD**](https://en.wikipedia.org/wiki/Test-driven_development) stands for **test-driven development**. The concept is very simple: given a **specification**, you first write **tests** that fulfil that specification and **fail** (because there is no implementation) and then implement code to make the tests **pass** (and thus, satisfy the specification). Once that's done, you **refactor** your code and then **repeat** the process with another test and another piece of functionality.
 
 In my professional experience, TDD is a useful concept but difficult to use when faced with an old, robust codebase. It's fun and neat when creating something from scratch or when the business it not overly complicated yet, but is very hard to introduce to a years-old project with heavy technical debt.
 
@@ -18,9 +18,9 @@ There's like five keywords, and four of them with links, that I've just thrown a
 
 > We will use **TDD** (test-driven development) when working on Wordplay, using the **Spock** library, which is written in the **Groovy** language, instead of the standard **JUnit** + **Mockito** libraries combo.
 
-Do you remember [Wordplay](/wordplay-word-processing-engine)? It's a library I'm making for my game, [The Story](/introducing-the-story), which I've decided to implement using TDD, and, while at it, describe how TDD works in the post you're reading right now :)
+Do you know [Wordplay](/wordplay-word-processing-engine)? It's a library I'm making for my game, [The Story](/introducing-the-story), which I've decided to implement using TDD, and, while at it, describe how TDD works in the post you're reading right now :)
 
-Before we move to implementation, just to help you categorize the keywords (the ones we'll use in this post in **bold**):
+Before we move to implementation, just to help you categorize the keywords (the ones we'll use in this post are in **bold**):
 - Development processes: **TDD**
 - Libraries: **Spock**, JUnit, Mockito
 - Languages: **Java**, **Groovy**
@@ -121,7 +121,7 @@ The weird coment at **line 9** is something specific for the IntelliJ IDE. Intel
 ![IntelliJ region]({{site.baseurl}}/public/images/intellij-region.png)
 *There's something odd about those line numbers...*
 
-It's a neat feature but you must be aware that it only works in IntelliJ IDE. If you heave colleagues working in a different IDE, you should probably not use those comments as it will not work for them and will just look weird.
+It's a neat feature but you must be aware that it only works in IntelliJ IDE. If you have colleagues working in a different IDE, you should probably not use those comments as it will not work for them and will just look weird.
 
 We will get back to the `@Unroll` annotation at **line 10** later.
 
@@ -189,7 +189,7 @@ public class WordplayImpl implements Wordplay {
 If we now run the test (I do it from the IntelliJ IDE), what we will see is this:
 
 ![Wordplay]({{site.baseurl}}/public/images/wordplay_testlaunched_1.png)
-*Remember kids: black, red and exclamation marks = bad*
+*Remember kids: black, red and exclamation marks = bad. But we want them at this stage, so it's good.*
 
 We have two tests displayed even though we wrote just one function - that's due to the `@Unroll` annotation along with the **where** block.
 
@@ -260,13 +260,11 @@ public class WordplayImpl implements Wordplay {
 Yes, this code is bad. Yes, it only covers one specific scenario and will fail if we have nested expressions or other weird stuff. But guess what - **it also makes the test pass**.
 
 ![Wordplay tests pass]({{site.baseurl}}/public/images/wordplay_tests_pass.png)
-*Dark color scheme when it's bad and changing to light when it's fine - talk about subliminal messages*
+*Dark color scheme when it's bad and changing to light when it's fine - talk about subliminal messages.*
 
 Which, according to TDD, is all we want at this stage.
 
 What comes next is the **refactoring stage**. This is the stage where we take care of code readability and maintainability, where we move it into classes and packages that are logical from the point of view of the whole, not just from the point of view of making a single test pass. All of that while constantly re-running the test to ensure it still passes.
-
-I'm not going to show you that stage, because, frankly, I don't know how to implement *Wordplay* in a sensible manner yet :)
 
 Once we do our refactoring and the test still passes - we move on to the next test and **repeat**.
 
