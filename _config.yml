@@ -13,3 +13,6 @@ sass:
   style: :compressed
   
 show_drafts: false
+
+# Google services
+google_analytics: UA-99898804-1
