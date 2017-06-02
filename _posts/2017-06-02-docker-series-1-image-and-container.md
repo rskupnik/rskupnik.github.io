@@ -6,7 +6,7 @@ title: Docker basics - finding an image and running a container
 ---
 ## Introduction
 
-You might've heard about this Docker thing. I won't go into details on [what it is](https://www.docker.com/what-docker) and how it works but focus instead on some **basic** usage.
+You might've heard about this Docker thing. I won't go into details on what it is and how it works, so you might want to read a short [presentation page](https://www.docker.com/what-docker) first. Once you've read that (or already know what it is), let's now focus on some **basic** capabilities - starting with **images** and **containers** and how to use them to solve a real-case problem - exploring one of those fancy languages you always wanted to try out but didn't want to bother with installation, environment setup and clean up once you're finished.
 
 Before we continue, though, three important points:
 - This series will be about basic usage, it's meant to introduce you to the topic and pave the way for further research.
