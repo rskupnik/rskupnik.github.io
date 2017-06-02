@@ -6,7 +6,7 @@ title: Docker basics - finding an image and running a container
 ---
 ## Introduction
 
-You might've heard about this Docker thing. I won't go into details on what it is and how it works, so you might want to read a short [presentation page](https://www.docker.com/what-docker) first. Once you've read that (or already know what it is), let's now focus on some **basic** capabilities - starting with **images** and **containers** and how to use them to solve a real-case problem - exploring one of those fancy languages you always wanted to try out but didn't want to bother with installation, environment setup and clean up once you're finished.
+You might've heard about this Docker thing. I won't go into details on what it is and how it works - if you've never heard about it, you might first want to get familiar with this short [presentation page](https://www.docker.com/what-docker). Once you've read that (or already know what it is), let's focus on some **basic** capabilities - starting with **images** and **containers** and how to use them to solve a **real-case problem** - exploring one of those fancy languages you always wanted to try out but didn't want to bother with installation, environment setup and clean up once you're finished.
 
 Before we continue, though, three important points:
 - This series will be about basic usage, it's meant to introduce you to the topic and pave the way for further research.
@@ -36,9 +36,9 @@ A quick summary - on Windows, you have two options:
 ---
 ## Usage
 
-Let's consider a simple and quite realistic example - so you've heard about this cool new JVM language called [Scala](https://www.scala-lang.org/). Being the professional developer that you are, you always seek to learn new things, so you've decided to follow some basic guides on the topic and **you'd like to have a REPL to follow along** - but you not necessarily want to download and install Scala on your machine. Your working machine is already quite cluttered with different tools and toys, there's probably some installation overhead you need to take care of, like setting environment variables or whatnot and meh, you just can't be bothered with it!
+Let's consider a simple and quite realistic example - so you've heard about this cool new JVM language called [Scala](https://www.scala-lang.org/) (if you hate Scala, bear with me - it's just an example :)). Being the professional developer that you are, you always seek to learn new things, so you've decided to follow some basic guides on the topic and **you'd like to have a REPL to follow along** - but you not necessarily want to download and install Scala on your machine. Your working machine is already quite cluttered with different tools and toys, there's probably some installation overhead you need to take care of, like setting environment variables or whatnot and meh, you just can't be bothered with it! Not to mention cleaning up after you're done.
 
-So how can you use Docker to solve that issue? Very simple - you can run a container that contains Scala and any dependencies it might require and exposes a REPL for you to use.
+So how can you use Docker to solve that issue? Very simple - you can **run a container that contains Scala and any dependencies it might require and exposes a REPL for you to use**.
 
 In order to do that, we need to **launch a container** with a specific **image**.
 
@@ -96,9 +96,13 @@ Let's run it then: `docker run -it williamyeh/scala` (let's ignore the `--rm` fl
 
 And there we have it, this time our container directed us to the REPL directly, so we can now **run a Scala REPL with a single command and still keep our computer clean**!
 
+You don't need to bother with installing Scala or any of it's dependencies, you don't even need to know what those dependencies are. There's also **no clean up involved** - if Scala's not your thing and you just want to get rid of it from your machine, stop the container and remove the image and there's no trace left.
+
+**Another benefit** is that your environment is clean. It contains only the basic OS and what's needed by the specific tool you need. Remember all those times some tool did not work because your computer had an incompatible version of something that the tool required or behaved in a weird way because it was influenced by some unknown force? **That won't happen** in case of containers.
+
 Why did the other image behave differently, though? That's something I intend to discuss in another post, where we'll talk about how to create images. Let's just treat it as magic for now :)
 
-Traditionally, a quick **summary**: to run a container, you need to simply `docker run -it your/image`. That's all there is to it to get a container running :) What the container will do depends on the image you choose.
+Traditionally, a quick **summary**: to run a container (assuming you've installed Docker and know the image you want to use), you need to simply `docker run -it your/image`. That's all there is to it to get a container running :) What the container will do depends on the image of your choice.
 
 There are many use cases for Docker, what I've shown here is one of them - when you want to explore some tool but not necessarily install it on your machine directly. Some others include a common environment for a development team or testing a tool/framework that cannot work under your host OS.
 
