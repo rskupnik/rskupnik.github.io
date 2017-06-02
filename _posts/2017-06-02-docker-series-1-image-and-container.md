@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Docker basics, part 1 - Finding an image and running a container
+title: Docker basics - finding an image and running a container
 ---
 
 ---
