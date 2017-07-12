@@ -284,28 +284,17 @@ public class CustomerController {
         this.customerRepository = customerRepository;
     }
 
-    @RequestMapping(
-            value = "/{id}",
-            method = RequestMethod.GET,
-            produces = "application/json"
-    )
+    @GetMapping(value = "/{id}", produces = "application/json")
     public Customer getCustomer(@PathVariable("id") Long id) {
         return customerRepository.findOne(id);
     }
 
-    @RequestMapping(
-            method = RequestMethod.GET,
-            produces = "application/json"
-    )
+    @GetMapping(produces = "application/json")
     public List<Customer> getAllCustomers() {
         return (List<Customer>) customerRepository.findAll();
     }
 
-    @RequestMapping(
-            value = "/formatted",
-            method = RequestMethod.GET,
-            produces = "application/json"
-    )
+    @GetMapping(value = "/formatted", produces = "application/json")
     public List<String> getAllCustomersFormatted() {
         return ((List<Customer>) customerRepository.findAll())
                 .stream()
@@ -315,11 +304,8 @@ public class CustomerController {
                 .collect(Collectors.toList());
     }
 
-    @RequestMapping(
-            method = RequestMethod.POST,
-            consumes = "application/json",
-            produces = "application/json"
-    )
+    @PostMapping(produces = "application/json",
+                 consumes = "application/json")
     public Customer addCustomer(@RequestBody Customer customer) {
         return customerRepository.save(customer);
     }
@@ -334,18 +320,13 @@ public class PetController {
     @Autowired
     private PetRepository petRepository;
 
-    @RequestMapping(
-            method = RequestMethod.GET,
-            produces = "application/json"
-    )
+    @GetMapping(produces = "application/json")
     public List<Pet> getAllPets() {
         return (List<Pet>) petRepository.findAll();
     }
 
-    @RequestMapping(
-            method = RequestMethod.POST,
-            produces = "application/json"
-    )
+    @PostMapping(produces = "application/json",
+                 consumes = "application/json")
     public Pet addPet(@RequestBody Pet pet) {
         return petRepository.save(pet);
     }
@@ -354,7 +335,7 @@ public class PetController {
 
 `CustomerController` is *constructor-injected*, while `PetController` is *field-injected* to provide an example for both - the same is done with the Kotlin and Scala versions.
 
-Again, Java verbosity creeps in, although much of it comes from *robust annotations*. Note that Java 8 comes to the rescue, as the `getAllCustomersFormatted()` function would've been much more bloated in Java 7 due to the lack of lambda functions.
+Again, Java verbosity creeps in, although ~~much of it comes from *robust annotations*~~ (using `@Get/PostMapping` instead of `@RequestMapping` reduces annotation size). Note that Java 8 comes to the rescue, as the `getAllCustomersFormatted()` function would've been much more bloated in Java 7 due to the lack of lambda functions.
 
 ## Kotlin
 
@@ -363,33 +344,19 @@ Again, Java verbosity creeps in, although much of it comes from *robust annotati
 @RequestMapping("/customers")
 class CustomerController(val customerRepository: CustomerRepository) {
 
-    @RequestMapping(
-            value = "/{id}",
-            method = arrayOf(RequestMethod.GET),
-            produces = arrayOf("application/json")
-    )
+    @GetMapping(value = "/{id}", produces = arrayOf("application/json"))
     fun getCustomer(@PathVariable("id") id: Long): Customer? = 
             customerRepository.findOne(id)
 
-    @RequestMapping(
-            value = "/formatted",
-            method = arrayOf(RequestMethod.GET),
-            produces = arrayOf("application/json")
-    )
+    @GetMapping(value = "/formatted", produces = arrayOf("application/json"))
     fun getAllCustomersFormatted() = 
             customerRepository.findAll().map { it.toString() }
 
-    @RequestMapping(
-            method = arrayOf(RequestMethod.GET),
-            produces = arrayOf("application/json")
-    )
+    @GetMapping(produces = arrayOf("application/json"))
     fun getAllCustomers() = customerRepository.findAll()
 
-    @RequestMapping(
-            method = arrayOf(RequestMethod.POST),
-            produces = arrayOf("application/json"),
-            consumes = arrayOf("application/json")
-    )
+    @PostMapping(produces = arrayOf("application/json"),
+                 consumes = arrayOf("application/json"))
     fun addCustomer(@RequestBody customer: Customer): Customer? = 
             customerRepository.save(customer)
 }
@@ -404,73 +371,55 @@ class PetController {
     @Autowired
     lateinit var petRepository: PetRepository
 
-    @RequestMapping(
-            method = arrayOf(RequestMethod.GET),
-            produces = arrayOf("application/json")
-    )
+    @GetMapping(produces = arrayOf("application/json"))
     fun getAllPets() = petRepository.findAll()
 
-    @RequestMapping(
-            method = arrayOf(RequestMethod.POST),
-            produces = arrayOf("application/json"),
-            consumes = arrayOf("application/json")
-    )
+    @PostMapping(produces = arrayOf("application/json"),
+                 consumes = arrayOf("application/json"))
     fun addPet(@RequestBody pet: Pet): Pet? = petRepository.save(pet)
 }
 ```
 
-At first glance, this seems as verbose as Java, which is quite surprising, but we have to notice that the bulk of this verbosity comes from the *required annotations*. Strip away those and the body of the controller is just 4 lines.
+~~At first glance, this seems as verbose as Java, which is quite surprising, but we have to notice that the bulk of this verbosity comes from the *required annotations*. Strip away those and the body of the controller is just 4 lines.~~
 
-This would, of course, present itself much less verbosely if I was to write the `@RequestMapping` annotations in a single line, but readability comes first when it comes to a blog post :)
+~~This would, of course, present itself much less verbosely if I was to write the `@RequestMapping` annotations in a single line, but readability comes first when it comes to a blog post :)~~
 
-One annoying thing that needs to be pointed out is the necessity to use `arrayOf()` inside the annotations if they take more than one parameter (except for the default value).
+Using `@Get/PostMapping` annotations instead allows us to skip at least the `method` parameter to decrease the annotation size. We could, theoretically, strip away the `produces` and `consumes` as well, but that would cause XML to also be a viable option - so those params are not redundant.
 
-I like the constructor injection Kotlin provides (and we don't even need a `@Autowired` annotation for some reason) although it might look confusing if the class was larger and had much more dependencies to be injected - I'd say it's a opportunity for proper formatting in such a case.
+One annoying thing that needs to be pointed out is the necessity to use `arrayOf()` inside the annotations if they take more than one parameter (except for the default value). This is due to be [fixed in Kotlin 1.2](https://blog.jetbrains.com/kotlin/2017/06/early-access-program-for-kotlin-1-2-has-been-started/).
 
-*Type inference* also makes the functions quite shorter, as we don't need to specify the return type if it can be sensibly inferred.
+I like the constructor injection Kotlin provides (and we don't even need a `@Autowired` annotation for some ~~reason~~ [[this](https://www.reddit.com/r/java/comments/6mm3rc/a_basic_spring_boot_web_app_in_java_kotlin_and/dk2libq/) is the reason]) although it might look confusing if the class was larger and had much more dependencies to be injected - I'd say it's a opportunity for proper formatting in such a case.
+
+*Type inference* also makes the functions quite shorter, as we don't need to specify the return type if it can be sensibly inferred; plus stripping away curly braces for one-line functions is a further decrease in number of lines.
 
 ## Scala
 
 ```scala
 @RestController
 @RequestMapping(Array("/customers"))
-class CustomerController @Autowired() (
+class CustomerController (
   private val customerRepository: CustomerRepository
 ) {
 
-  @RequestMapping(
-    value = Array("/{id}"),
-    method = Array(RequestMethod.GET),
-    produces = Array("application/json")
-  )
+  @GetMapping(value = Array("/{id}"),
+              produces = Array("application/json"))
   def getCustomer(@PathVariable("id") id: Long) = customerRepository.findOne(id)
 
-  @RequestMapping(
-    method = Array(RequestMethod.GET),
-    produces = Array("application/json")
-  )
+  @GetMapping(produces = Array("application/json"))
   def getAllCustomers() = customerRepository.findAll()
 
-  @RequestMapping(
-    value = Array("/formatted"),
-    method = Array(RequestMethod.GET),
-    produces = Array("application/json")
-  )
+  @GetMapping(value = Array("/formatted"),
+              produces = Array("application/json"))
   def getAllCustomersFormatted() = {
-    // This can probably be done much better, blame my low Scala skills
-    val output: java.util.List[String] = new util.ArrayList[String]()
-    val customers: java.util.Iterator[Customer] = customerRepository.findAll().iterator()
-    while (customers.hasNext) {
-      output.add(customers.next().toString())
-    }
-    output
+    customerRepository
+      .findAll()
+      .asScala
+      .map(_.toString())
+      .asJava
   }
 
-  @RequestMapping(
-    method = Array(RequestMethod.POST),
-    consumes = Array("application/json"),
-    produces = Array("application/json")
-  )
+  @PostMapping(produces = Array("application/json"),
+               consumes = Array("application/json"))
   def addCustomer(@RequestBody customer: Customer) = customerRepository.save(customer)
 }
 ```
@@ -483,27 +432,21 @@ class PetController {
   @Autowired
   var petRepository: PetRepository = null
 
-  @RequestMapping(
-    method = Array(RequestMethod.GET),
-    produces = Array("application/json")
-  )
+  @GetMapping(produces = Array("application/json"))
   def getAllPets = petRepository.findAll()
 
-  @RequestMapping(
-    method = Array(RequestMethod.POST),
-    produces = Array("application/json"),
-    consumes = Array("application/json")
-  )
+  @PostMapping(produces = Array("application/json"),
+               consumes = Array("application/json"))
   def addPet(@RequestBody pet: Pet) = petRepository.save(pet)
 
 }
 ```
 
-It's the same story as with Kotlin - if it weren't for the *annotations*, the bodies of those controllers would've been very few lines - apart from the `getAllCustomersFormatted()` function, which is an atrocity, but I could not get the Java collections to work properly with Scala collections - so yeah, sorry for the eyesore.
+Scala also requires an `Array` to be used when providing parameters, even for the default one.
 
-As in Kotlin, Scala also requires an `Array` to be used when providing parameters, although Kotlin at least allows to skip it for the default value.
+~~The `getAllCustomersFormatted()` function, which is an atrocity, but I could not get the Java collections to work properly with Scala collections - so yeah, sorry for the eyesore~~ (scratch that, the code's been improved with some help from [Teemu Pöntelin](https://github.com/tehapo), thanks :) )
 
-Notice having to include the `@Autowired()` in the constructor, which could've been skipped in Kotlin.
+~~Notice having to include the `@Autowired()` in the constructor, which could've been skipped in Kotlin~~ (The `@Autowired` is actually not needed at all if you only have a single constructor, as explained [here](https://www.reddit.com/r/java/comments/6mm3rc/a_basic_spring_boot_web_app_in_java_kotlin_and/dk2libq/))
 
 ---
 ## Summary
