@@ -7,7 +7,7 @@ title: Lost in LibGDX's UI tools? - maybe this'll help
 
 That's how I felt when I tried to make sense of how to **properly** create a UI in LibGDX. The reason for that confusion is that there's a compilation of a few libraries and concepts that create a powerful stack, but you first have to understand the place and use for each of the pieces of that stack - and it's not properly explained in the documentation how they fit together.
 
-I'm not saying LibGDX's documentation is bad - it's actually better than most I've seen. But the docs tell you how to use each particular piece of technology, but they don't tell you how to combine them and how they come together. That's why I created this post.
+I'm not saying LibGDX's documentation is bad - it's actually better than most I've seen. Unfortunately, the docs tell you how to use each particular piece of technology, but they don't tell you how to combine them and how they come together. That's why I created this post.
 
 The goal is to show you the **tools** you have at your disposal when it comes to UI in LibGDX and **what their place is in the whole stack**.
 
