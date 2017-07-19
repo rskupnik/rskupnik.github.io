@@ -31,7 +31,7 @@ We have two entities here: `Customer` and `Pet`.
 public class Customer {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue
     private Long id;
     private String firstName, lastName;
 
@@ -63,7 +63,7 @@ public class Customer {
 public class Pet {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue
     private Long id;
     private String name;
 
@@ -96,7 +96,25 @@ Not much to talk about here - obviously Java is verbose, so the code takes a lot
 There are a few ways we can define an *entity class* in Kotlin, I've tried two. Both are working, although the latter is probably preferred, as the former simply tries to do the same as you would do in regular Java.
 
 ```kotlin
-// Implementation using a regular class, mimicking regular Java
+// Implementation using a data class (preferred)
+
+@Entity
+data class Customer(
+        @Id @GeneratedValue
+        var id: Long = 0,
+
+        var firstName: String = "",
+        var lastName: String = "",
+
+        @JsonIgnore @OneToMany(mappedBy = "owner") 
+        var pets: List<Pet>? = null
+) {
+    override fun toString(): String = "$firstName $lastName"
+}
+```
+
+```kotlin
+// Implementation using a regular class, mimicing regular Java
 
 @Entity
 class Pet {
@@ -110,7 +128,7 @@ class Pet {
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue
     var id: Long = 0
 
     var name: String = ""
@@ -120,24 +138,6 @@ class Pet {
     var owner: Customer? = null
 
     override fun toString(): String = "$name"
-}
-```
-
-```kotlin
-// Implementation using a data class (preferred)
-
-@Entity
-data class Customer(
-        @Id @GeneratedValue(strategy = GenerationType.AUTO) 
-        var id: Long = 0,
-
-        var firstName: String = "",
-        var lastName: String = "",
-
-        @JsonIgnore @OneToMany(mappedBy = "owner") 
-        var pets: List<Pet>? = null
-) {
-    override fun toString(): String = "$firstName $lastName"
 }
 ```
 
@@ -152,39 +152,39 @@ Finally, *String interpolation* and the possibility to skip curly braces in one-
 ## Scala
 
 ```scala
-@Entity
-class Customer {
+// Implementation using a case class
 
-  // Need to specify a parameterized constructor explicitly
-  def this(firstName: String, lastName: String) {
-    this()
-    this.firstName = firstName
-    this.lastName = lastName
+@Entity
+case class Customer(
+       @(Id@field)
+       @(GeneratedValue@field)
+       @BeanProperty
+       var id: Long,
+
+       @BeanProperty
+       var firstName: String,
+
+       @BeanProperty
+       var lastName: String,
+
+       @(JsonIgnore@field)
+       @(OneToMany@field)(mappedBy = "owner")
+       @BeanProperty
+       var pets: java.util.List[Pet]) {
+
+  // Need to specify an empty constructor
+  def this() {
+    this(0, "", "", new util.ArrayList[Pet]())
   }
 
-  // BeanProperty needed to generate getters and setters
+  override def toString: String = s"$firstName $lastName"
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  @BeanProperty
-  var id: Long = _
-
-  @BeanProperty
-  var firstName: String = _
-
-  @BeanProperty
-  var lastName: String = _
-
-  @JsonIgnore
-  @OneToMany(mappedBy = "owner")
-  @BeanProperty
-  var pets: java.util.List[Pet] = _
-
-  override def toString(): String = s"$firstName $lastName"
 }
 ```
 
 ```scala
+// Implementation using a regular class, mimicing regular Java
+
 @Entity
 class Pet {
 
@@ -206,14 +206,18 @@ class Pet {
   @JoinColumn(name = "ownerId", nullable = false)
   @BeanProperty
   var owner: Customer = _
+
+  override def toString: String = name 
 }
 ```
 
-I was actually disappointed in Scala in this case - the implementation is almost as verbose as Java, it only avoid defining getters and setters explicitly, at the cost of additional field annotation (`@BeanProperty`).
+In order to have getters and setters required by the underlying ORM, we need to use an additional annotation in Scala (`@BeanProperty`).
 
-I tried to use a [case class](http://docs.scala-lang.org/tutorials/tour/case-classes.html) that should theoretically shorten the implementation quite a lot, but I could not get it working (perhaps my low Scala skills are to blame here).
+~~I tried to use a [case class](http://docs.scala-lang.org/tutorials/tour/case-classes.html) that should theoretically shorten the implementation quite a lot, but I could not get it working (perhaps my low Scala skills are to blame here).~~
 
-At least it provides *String interpolation*, allows ommision of curly braces in one-liners and requires explicit `override` keyword, which is on par with Kotlin.
+The case class is actually possible, as explained to me by [Alexander Samsig](https://github.com/Asamsig) (thanks!). It requires the use of [scala.annotation.meta](http://www.scala-lang.org/api/2.12.0/scala/annotation/meta/index.html) in order to specify explicitly what the annotations should be attached to (in this example - the fields that will be generated).
+
+Scala also provides *String interpolation*, allows ommision of curly braces in one-liners and requires explicit `override` keyword, which is on par with Kotlin.
 
 ---
 ## Repositories
@@ -446,27 +450,31 @@ Scala also requires an `Array` to be used when providing parameters, even for th
 
 ~~The `getAllCustomersFormatted()` function, which is an atrocity, but I could not get the Java collections to work properly with Scala collections - so yeah, sorry for the eyesore~~ (scratch that, the code's been improved with some help from [Teemu Pöntelin](https://github.com/tehapo), thanks :) )
 
-~~Notice having to include the `@Autowired()` in the constructor, which could've been skipped in Kotlin~~ (The `@Autowired` is actually not needed at all if you only have a single constructor, as explained [here](https://www.reddit.com/r/java/comments/6mm3rc/a_basic_spring_boot_web_app_in_java_kotlin_and/dk2libq/))
+~~Notice having to include the `@Autowired()` in the constructor, which could've been skipped in Kotlin~~ (The `@Autowired` is actually not needed at all if you only have a single constructor, as explained [here](https://www.reddit.com/r/java/comments/6mm3rc/a_basic_spring_boot_web_app_in_java_kotlin_and/dk2libq/)).
+
+As in Kotlin, Scala also allows for *type inference* and ommision of curly braces in one-liners.
 
 ---
 ## Summary
 
 Although the application is very simple, it was enough for me to get a basic feeling of how it would be to create something bigger in each of the featured languages.
 
-Given a choice between *Kotlin* and *Scala* I would definitely go with **Kotlin**.
+Given a choice between *Kotlin* and *Scala* I would rather go with **Kotlin**.
 
 Why?
 
 **First of all**, I feel like *Scala* is a second-class citizen in my IDE of choice (IntelliJ IDEA) while *Kotlin* is definitely a first-class citizen. This is quite obvious, given that the same company that created the IDE (Jetbrains) also created the *Kotlin* language itself - so of course they support it very well. Scala, on the other hand, is integrated via a plugin. The difference is quite visible, and - for me personally, at least - quite important.
 
-**Second of all**, if I wanted to use *Scala* for web app development - I would go with [Play Framework](https://www.playframework.com/) - simply because it's designed with Scala in mind and the language will make things easier, rather than get in your way (as it did in the case of this small app, more often than not).
+**Second of all**, if I wanted to use *Scala* for web app development - I would go with [Play Framework](https://www.playframework.com/) - simply because it's designed with Scala in mind and the language will make things easier.
+
+**Lastly**, although Scala and Kotlin provide mostly the same features when it comes to decreasing the amount of code written, Kotlin generates far less problems for beginner-to-intermediate language users in this case. That's probably due to Scala being more complicated (which is hardly a drawback, mind you) and having more features and thus it feels a bit like an overkill for the task at hand. Again, I'd advise using [Play Framework](https://www.playframework.com/) instead.
 
 Those are **my personal reasons**, but **there are more**, more general ones.
 
 I feel like *Scala* is more detached from *Java* than *Kotlin* is, since the latter is basically an extension that aims to fix the problems of the original, while the former aims to be a hybrid of imperative and functional programming. That being said, I believe *Scala* is much better used in other areas, such as **Big Data**, while *Kotlin* is excellent at what it's supposed to do - replace *Java* to relieve you of common headaches and provide tight interoperability.
 
-Moreover, **Spring** itself seems to support *Kotlin* much more than it does *Scala*.
+Moreover, **Spring** itself seems to support *Kotlin* (or the other way around?) much more than it does *Scala*.
 
 Finally, I believe *Kotlin* is easier to learn than *Scala*, from a Java programmer's point of view. That's mainly because it was designed as an improvement upon *Java* and doesn't put such a heavy emphasis on functional programming as *Scala* does. The interoperability with *Java* is also much tighter in *Kotlin*, which makes debugging problems easier.
 
-Last but not least - I want to explicitly state that **I'm not bashing *Scala* in any way**. I simply believe, that, **for me personally**, as far as **building a web app with Spring Boot in a JVM language that is not Java** is concerned - *Kotlin* is better at the job. The bold parts are important :) As mentioned earlier, *Scala* is excellent at other fields - such as the mentioned Big Data, for example - but not necessarily at replacing *Java*.
+Last but not least - I want to explicitly state that **I'm not bashing *Scala* in any way** (as some people seem to have that impression). I simply believe, that, **for me personally**, as far as **building a web app with Spring Boot in a JVM language that is not Java** is concerned - *Kotlin* is better at the job. The bold parts are important :) As mentioned earlier, *Scala* is excellent at other fields - such as the mentioned Big Data, for example - or in dedicated frameworks, but not necessarily at replacing *Java* in typical *Java* environments.
