@@ -24,7 +24,7 @@ The choice, in my opinion, should be based on two things: research and context. 
 
 For example, if you're making a library that is to be used by other people, or you're making an app that will run on desktop and on Android - compile-time dependency injection might be better, because runtime reflection might be very slow on Android or someone who wants to use your library might not like that it introduces unnecessary (from his point of view) runtime overhead.
 
-Explanations out of the way, let's now see how to make a basic library with Dagger 2.
+Explanations out of the way, let's now see how to make a basic library with Dagger 2. We'll create something very simple - a basic computer emulator.
 
 ---
 ## Implementation
@@ -74,4 +74,4 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 </project>
 ```
 
-We need to provide two things to make Dagger work - the dependency itself and an annotation processor that plugs into compile phase and generates the necessary boilerplate code.
+We need to provide two things to make Dagger work - the dependency itself and an annotation processor that plugs into compile phase and generates the necessary boilerplate code. This is required here because Dagger is a **compile-time** dependency injection - as mentioned earlier, it generates some code to satisfy the dependencies.
