@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Dependency injection with no runtime overhead - Dagger 2
+title: Dagger - dependency injection with no runtime overhead
 ---
 
 ---
@@ -50,6 +50,12 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         <artifactId>dagger</artifactId>
         <version>2.11</version>
     </dependency>
+    <dependency>
+      <groupId>com.google.dagger</groupId>
+      <artifactId>dagger-compiler</artifactId>
+      <version>2.11</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
   
   <build>
@@ -75,3 +81,29 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 ```
 
 We need to provide two things to make Dagger work - the dependency itself and an annotation processor that plugs into compile phase and generates the necessary boilerplate code. This is required here because Dagger is a **compile-time** dependency injection - as mentioned earlier, it generates some code to satisfy the dependencies.
+
+Let's now move on to some Java code. Our application will be very simple - we'll have a `Computer` that uses a `Keyboard` and a `Screen` to read some data from the user and print it. It's **very** basic and that's intended - it'll let us focus on the actual dependency injection part.
+
+Here's how our `Keyboard` class will look like:
+
+```java
+public class Keyboard {
+
+    private Scanner scanner = new Scanner(System.in);
+
+    @Inject
+    public Keyboard() {
+
+    }
+
+    public String use() {
+        return scanner.nextLine();
+    }
+}
+```
+
+The important part is the **no-args constructor** annotated with `@Inject`. According to [dagger's documentation]():
+
+> Use @Inject to annotate the constructor that Dagger should use to create instances of a class. (...) If your class has @Inject-annotated fields but no @Inject-annotated constructor, Dagger will inject those fields if requested, but will not create new instances. Add a no-argument constructor with the @Inject annotation to indicate that Dagger may create instances as well.
+
+Long story short - if we want Dagger to instantiate our class, we need to tell it which constructor to use - and we do that with a `@Inject` annotation. Quite simple.
