@@ -107,3 +107,81 @@ The important part is the **no-args constructor** annotated with `@Inject`. Acco
 > Use @Inject to annotate the constructor that Dagger should use to create instances of a class. (...) If your class has @Inject-annotated fields but no @Inject-annotated constructor, Dagger will inject those fields if requested, but will not create new instances. Add a no-argument constructor with the @Inject annotation to indicate that Dagger may create instances as well.
 
 Long story short - if we want Dagger to instantiate our class, we need to tell it which constructor to use - and we do that with a `@Inject` annotation. Quite simple.
+
+We have a `Keyboard`, let's now create a `Screen`:
+
+```java
+public class Screen {
+
+    @Inject
+    public Screen() {
+
+    }
+
+    public void print(String s) {
+        System.out.println("=== " + s + " ===");
+    }
+}
+```
+
+Again, nothing fancy - just a constructor annotated with `@Inject`.
+
+```java
+public class Computer {
+
+    @Inject Keyboard keyboard;
+    @Inject Screen screen;
+
+    @Inject
+    public Computer() {
+
+    }
+
+    public void use() {
+        String input = keyboard.use();
+        screen.print(input);
+    }
+}
+```
+
+Now here's where we see the benefit of *dependency injection*. In our `Computer` class we simply provide both `Keyboard` and `Screen` as `@Inject`-annotated fields (note that they cannot be private in case of Dagger) - **and that's it**. When we finish configuration our `Computer` will just work, we don't have to take care of providing the `Keyboard` and `Screen` classes manually. Can you imagine how huge of an advantage it is in the case of large, real-world applications?
+
+## Configuration
+
+Alright, all the code is there but to make it work we need to provide a few more things.
+
+First of all, we have to have some code that will **trigger** the whole mechanism. Once triggered, Dagger will traverse through all our annotated objects and do the whole injection magic.
+
+While we're at it, there's an **important rule** you need to know - when you're using *dependency injection* you have to remember to **not** instantiate managed objects by yourself. In our example that means you should not do `new Keyboard()`, for example. If you do that, Dagger has no way of knowing that such an object was just created and that it should manage it - such an instance of `Keyboard` will be invisible to our *dependency injection* framework. You have to **trigger** Dagger's mechanism so that it can discover and initialize those classes by itself - that way Dagger is aware of them and can manage them.
+
+So how do we do that triggering part? We need to create an interface with a method that returns the object we want to be the starting point of the whole mechanism:
+
+```java
+@Component
+public interface ComputerInjector {
+    Computer computer();
+}
+```
+
+In our case, the starting point is the `Computer` class. Why? Because it's the one that's not injected anywhere else. Dagger will start from `Computer`, it go through all the dependencies it needs (all fields annotated with `@Inject`) and will **satisfy those dependencies** - in our example, Dagger will create both `Keyboard` and `Screen` using the constructors we told it to use.
+
+Once we have the `ComputerInjector` we need move on to the **actual triggering** part:
+
+```java
+public class Main {
+
+    public static void main(String[] args) throws Exception {
+        ComputerInjector injector = DaggerComputerInjector.create();
+        injector.computer().use();
+    }
+}
+```
+
+This is the entry point to our program. Notice the `DaggerComputerInjector`? Dagger's documentation specifies that it will create an instance of our `@Component`-annotated interface by appending `Dagger` to it.
+
+Because this class is not present at first your IDE will probably highlight it as an error. That's ok, the error should go away after first compilation, since Dagger will generate the class then.
+
+So, the here's how the whole process looks like:
+1. We use the instance of our `@Component`-annotated interface that Dagger generated to **trigger** the mechanism. We do that by invoking a function that returns one of our objects that will serve as a starting point - `Computer` in this case.
+2. Dagger analyzes the starting point class and attempts to satisfy its dependencies. This is a cascading process.
+3. Once Dagger is finished, our classes should have all of their dependencies filled and they can be used as if the `@Inject`-annotated fields are present.
