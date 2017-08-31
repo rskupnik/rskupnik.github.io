@@ -185,3 +185,50 @@ So, the here's how the whole process looks like:
 1. We use the instance of our `@Component`-annotated interface that Dagger generated to **trigger** the mechanism. We do that by invoking a function that returns one of our objects that will serve as a starting point - `Computer` in this case.
 2. Dagger analyzes the starting point class and attempts to satisfy its dependencies. This is a cascading process.
 3. Once Dagger is finished, our classes should have all of their dependencies filled and they can be used as if the `@Inject`-annotated fields are present.
+
+If you compile and run the application now, it should work as expected - you should be able to provide input (as per `Keyboard` implementation) and it will be printed to the console by our `Screen` class.
+
+It is possible that it won't work at first attempt - that's because the generated code is not yet present. In such a case, simply try and run it again.
+
+So there you have it. We were able to create a few independent components and wire them up together using a few simple annotations and some configuration code. Notice that the configuration code is a one-time thing (with maybe some tinkering later on, if required) - since now you can simply create any other components, annotate them properly and use them from anywhere by simply `@Inject`-ing them into fields or constructors.
+
+There's one other thing I'd like to show you, though.
+
+## Providers
+
+What if we use a third party library that provides us with some interface and an implementation? Since we only get a compiled class file, we can't just edit it and insert a `@Inject`-annotated constructor. So how do we make Dagger work with it? The answer is **providers**.
+
+Let's write a bit of code to serve as an example. Suppose we get a requirement to not only print the input gathered by our `Keyboard` on the `Screen` but also send it to a `Printer` which is provided by a third party as a compiled class with an interface.
+
+```java
+public interface Printer {
+    void print(String s);
+}
+```
+
+```java
+public class PrinterImpl implements Printer {
+
+    public void print(String s) {
+        System.out.println("~~~ " + s + " ~~~");
+    }
+}
+```
+
+Remember, we don't have access to the `PrinterImpl` class. We have to work with what we have here.
+
+In order to integrate this `Printer` with Dagger, we have to use a **Provider** - and to specify one, we have to use a **Module**. Here's how it looks like:
+
+```java
+@Module
+public class ProvidersModule {
+
+    @Provides
+    Printer printer() {
+        return new PrinterImpl();
+    }
+}
+```
+
+The `Module` contains methods annotated with `@Provides` annotation with a return value of the interface we want to work with. The body of the method does the instantiation part and return an actual instance. The name of the method doesn't matter. This way we can integrate thid party components and make them work with our *dependency injection* framework.
+
