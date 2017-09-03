@@ -5,7 +5,7 @@ title: Dagger - dependency injection with no runtime overhead
 
 ---
 
-If you are like me and you worked in Java web dev, then you might have had the chance to work with **Spring** and it's *dependency injection*. It makes your code a lot more clean and easier to follow. Wouldn't it be great to use dependency injection in your **pet project** without worrying about it being slow due to reflection or not working on some environments?
+If you are like me and you worked in Java web dev, then you might have had the chance to work with **Spring** and it's *dependency injection*. It makes your code a lot more clean and easier to follow. Wouldn't it be great to use dependency injection in your **pet project** without worrying about it being slow due to reflection or the code not working on some environments?
 
 **Dependency injection** is one form of *inversion of control*. The basic principle is that instead of managing dependencies between components in your code by yourself, you use a single container to resolve those for you and inject the required dependencies where you want them. You, as a programmer, only have to define how a specific dependency is to be satisfied (create a new object each time, or maybe use a single object for each case, etc.) and then simply provide variables that will hold those dependencies where you need them, add some required annotations - and you're done, the DI library will *inject* the dependencies into those variables as instructed.
 
@@ -124,7 +124,7 @@ public class Screen {
 }
 ```
 
-Again, nothing fancy - just a constructor annotated with `@Inject`. Let's now use those two components:
+Again, nothing fancy - just a constructor annotated with `@Inject`. Here's how we can use those two components:
 
 ```java
 public class Computer {
@@ -274,7 +274,7 @@ Hello World!
 ---
 ## Conclusions
 
-There you have it - a dependency injection library that works during the compilation phase and does not really on slow and resource-heavy reflection.
+There you have it - a dependency injection library that works during the compilation phase and does not rely on slow and resource-heavy reflection.
 
 **Dependency injection is a powerful technique** and makes a developer's life a whole lot easier by removing a ton of boilerplate code. Being able to use it not only in web development, but also in small projects and libraries is great. I believe that some additional time spent on setting up this mechanism is well worth it, especially when compared to how much **time and headaches dependency injection spares**.
 
