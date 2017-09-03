@@ -263,7 +263,7 @@ public class Computer {
 }
 ```
 
-Running the code should run without any problems and work as intended:
+Running the code should run without any problems and work as intended (again, you might need to run `mvn clean install` first to let Dagger generate the code):
 
 ```
 Hello World!
