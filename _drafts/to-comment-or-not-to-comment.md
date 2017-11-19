@@ -69,3 +69,17 @@ return false;		// Explain why false is returned
  * This is a javadoc comment. Notice the double * at the opening, which distinguishes it from a block comment.
  */
 ```
+
+## When to comment
+
+Comments are probably the easiest part of a programming language's syntax - but knowing **when** to comments is the tricky part.
+
+I usually come across two kinds of people when it comes to commenting code - the **anti-commenters** and the **overcommenters**.
+
+**Anti-commenters** are people who claim that **any** comments are symptom of bad design and will happily flag them in any code review they encounter without giving a second thought on why are they there. I understand where they are coming from but I disagree with the absolute no-comments rule. 
+
+**Overcommenters** are usually young developers with little experience. Overcommenting in such a case stems from the fact that they find it easier to describe the work they need to do in pseudo-code comments first and then fill it with actual code. I believe it's a good practice, it takes the load off one's mind and makes it easier to focus at particular pieces of a whole - but such comments should be removed at the ned and the code needs to explain by itself what it does - through proper class and functions names and other means.
+
+When it comes to commenting I personally look at **two rules**:
+* Explain the context - **describe not what a partiular piece of code does, but why it does it**
+* **Don't repeat information** - in a piece of code like `List<String> names = new ArrayList<String>();` it is obvious what the list is for, there's no need to add `// Create a list to hold names`
