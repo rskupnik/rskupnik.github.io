@@ -88,17 +88,40 @@ The technique I use for deciding whether or not a piece of code should have some
 
 For example, you might have a large listener class that reads events from a `RabbitMQ` Queue and does a lot of business logic on them. Perhaps it would be useful to add a block comment at the top of the class explaining what the queue is for in terms of business logic, in what other microservice is the queue populated with events and what do the events represent (again, in terms of business logic). This information can make it a lot easier to understand your code, because you suddenly know **what is the purpose**, not only what it **technically does**.
 
-`// TODO: Insert relevant code here`
+```java
+/*
+ * Events that this listener listens for are generated and inserted into the queue
+ * in module X, when the user does this and that on the reviews page.
+ *
+ * This Listener will process the events and send them to API X or move them to an error queue if processing
+ * fails for any reason.
+ *
+ * There are a few flags in the properties file that control the behaviour of this logic:
+ * ...
+ * ...
+ * ...
+ */
+public class ReviewListener {
+	// ... a lot of business code here
+}
+```
+
+And there we go. A few short sentences. The reader immediately knows where the events come from, what actual user action do they convey, a broad picture of what the code does and what are the possible outcomes and some additional information he might find useful, like the control flags.
+Sure, he could get most of this information from the code itself - but that would require a lot more effort and/or talking to the person responsible for it (if still available). I believe such short summaries of some pieces of business logic code increase readability immensly.
 
 Of course, such a block comment might (and probably will) get outdated after a while. People will make changes to the code and not update the block comment at the top, etc. However, that's the reason why you should not describe **implementation details** but just the **overall context**, which is not **subject to change**. In our example, describing what the events represent is pretty safe - if at some point the architecture shifts from a queue implementation to something else, your listener will probably be removed anyway and your block comment deemed obsolete alongside it.
 
 Comments are also useful when your code does something that might seem weird but is justified either by business requirements or drawbacks in external or internal dependendencies. For example, in one of the projects I've been working on, I had to integrate with an external API that left a lot to wish for. One of the endpoints required me to send a single element in a form of a list with one and only one element - it had something to do with legacy compliance on their side. Writing some code that packs a single element into a list to send it to an API might raise a few eyebrows. That's why I decide to add some comments that explained the **context** - they informed the reader **not what the code does**, because that was obvious, but **why does it do it like that**.
 
-`// TODO: Insert relevant code here`
+```java
+Review review = createReview();
+// External API expects to get a list with only a single review in it - others will be ignored.
+dto.setReview(Arrays.asList(review));
+```
 
 Another case I find a few comments useful is in a long and complicated logic flow. Of course you might say that if the code was properly structured and well thought-through it should still be easy to read and understand, despite its length and complexity. I agree with that, however, I deem it an unobtainable dream - neither the project we work on, nor we, are perfect. People will make errors and create subpar code. Requirements will keep changing, forcing us or others to sacrifice readability and proper design for the sake of pushing out features. That's just how the world is and anyone who claims otherwise was either extremely lucky or has little experience.
 
-Therefore, when I happen to work on a long, complex and far-from-ideal (for various reasons) code flow, I like to do a favor to others and perhaps my future self by leaving a few crucial comments here and there. Again, bearing in mind the rule to **not repeat information that is already there**. To do this, I use the method I described above - I try to think as someone who sees the code for the first time - and then I go through the code and some additional information that I feel might be useful towards understanding the whole. For example, in our long code flow we might have a `boolean` flag that controls some small piece of it - proper naming of that flag is crucial towards readability, but adding some additional information in a comment might make reading the code even easier.
+Therefore, when I happen to work on a long, complex and far-from-ideal (for various reasons) code flow, I like to do a favor to others and perhaps my future self by leaving a few crucial comments here and there. Again, bearing in mind the rule to **not repeat information that is already there**. To do this, I use the method I described above - I try to think as someone who sees the code for the first time - and then I go through the code and add some additional information that I feel might be useful towards understanding the whole. For example, in our long code flow we might have a `boolean` flag that controls some small piece of it - proper naming of that flag is crucial towards readability, but adding some additional information in a comment might make reading the code even easier.
 
 ```java
 // (...) a lot of code here
