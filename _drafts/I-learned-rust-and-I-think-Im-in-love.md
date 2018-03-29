@@ -38,3 +38,37 @@ Rust uses the known notion of [doc-comments](https://doc.rust-lang.org/book/firs
 ### Supports the open source culture by always including sources in your crates
 
 Not much more to say about it - any code you write and publish with `cargo` onto [crates.io](https://crates.io/) will have source code included inside. You can read more about that [here](https://doc.rust-lang.org/book/second-edition/ch14-02-publishing-to-crates-io.html).
+
+### Makes you think about your code in ways you've probably not thought before
+
+That's mainly due to [ownership](https://doc.rust-lang.org/book/second-edition/ch04-00-understanding-ownership.html), [borrowing](https://doc.rust-lang.org/book/second-edition/ch04-02-references-and-borrowing.html) and [lifetimes](https://doc.rust-lang.org/book/second-edition/ch10-00-generics.html). How often do you wonder about the scopes of your variables and how many mutable and immutable references do they have at any given moment? Yeah.
+
+### Serious approach to testing
+
+Unit testing is crucial when it comes to making sure your code works as it's supposed to and pave the ground for potential refactors, there's probably no need to convince anyone of that. If you agree then you'll be happy to know how easy it is to [write tests](https://doc.rust-lang.org/book/second-edition/ch11-01-writing-tests.html), [run them](https://doc.rust-lang.org/book/second-edition/ch11-02-running-tests.html) and [organize them](https://doc.rust-lang.org/book/second-edition/ch11-03-test-organization.html) in Rust.
+
+### Combines what's best in other languages (be it old or new) and avoids their mistakes
+
+* Doc-comments!
+* Functional elements (closures!)
+* No class-inheritance
+* Traits!
+* Lets you avoid a lot of dangerous bugs so easy to make in C/C++
+
+### Convention over configuration where it makes sense
+
+Stuff such as [organization of modules](https://doc.rust-lang.org/book/second-edition/ch07-01-mod-and-the-filesystem.html), aforementioned [tests](https://doc.rust-lang.org/book/second-edition/ch11-03-test-organization.html) or [configuration of workspaces](https://doc.rust-lang.org/book/second-edition/ch14-03-cargo-workspaces.html) to name a few.
+
+### Tooling that's easy to use, powerful and extensible.
+
+[Cargo](https://doc.rust-lang.org/cargo/) is the main tool you'll use for compiling, running and deploying your code. It's well documented, easy to use and pleasant to read. Seriously, I wish all languages had such clear compiler warnings and errors that not only tell you what and where, but also give hints on what you might have done wrong - and they are clearly meant for humans, not the computer.
+
+TODO: A screenshot of the compiler warnings/errors.
+
+Oh and have I mentioned it's easily [extensible](https://doc.rust-lang.org/book/second-edition/ch14-05-extending-cargo.html)? Let me just quote the book:
+
+> Cargo is designed so you can extend it with new subcommands without having to modify Cargo. If a binary in your `$PATH` is named `cargo-something`, you can run it as if it was a Cargo subcommand by running `cargo something`. Custom commands like this are also listed when you run `cargo --list`. Being able to use `cargo install` to install extensions and then run them just like the built-in Cargo tools is a super convenient benefit of Cargo’s design!
+
+### Ownership and immutability make it easy to support concurrency
+
+### It's easy to spot the "unsafe" parts
