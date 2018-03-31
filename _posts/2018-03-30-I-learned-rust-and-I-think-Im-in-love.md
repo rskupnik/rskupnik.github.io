@@ -66,7 +66,7 @@ Unit testing is crucial when it comes to making sure your code works as it's sup
 
 ### Convention over configuration where it makes sense
 
-Not a new concept, convetion-over-configuration makes it much more pleasant to work with a language, **if done right**. It's easy to overdo it or to lose distance and make the convention part make sense to the creators, but necessarily the users. I believe Rust strikes the balance here quite well, although this is one of those things that you get to know with experience, and I don't have a lot of that with Rust yet.
+Not a new concept, convention-over-configuration makes it much more pleasant to work with a language, **if done right**. It's easy to overdo it or to lose distance and make the convention part make sense to the creators, but necessarily the users. I believe Rust strikes the balance here quite well, although this is one of those things that you get to know with experience, and I don't have a lot of that with Rust yet.
 
 Some examples: [organization of modules](https://doc.rust-lang.org/book/second-edition/ch07-01-mod-and-the-filesystem.html), aforementioned [tests](https://doc.rust-lang.org/book/second-edition/ch11-03-test-organization.html) or [configuration of workspaces](https://doc.rust-lang.org/book/second-edition/ch14-03-cargo-workspaces.html) to name just a few.
 
