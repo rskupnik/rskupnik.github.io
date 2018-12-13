@@ -1,0 +1,10 @@
+---
+layout: post
+title: Hexagonal architecture with Java 9 modules
+---
+
+Have you ever wondered what would happen if Spring was to suddenly pop out of existence? How easy would it be to migrate your web application to a different framework? Would it be possible at all? Don't worry, this is not one of those posts where I tell you that Spring is the root of all evil and you should try the fancy-new-alternative framework instead! What I do want to tell you, though, is that **strong dependency on some external component is dangerous** and often hinders your project's elasticity and capability to change - those two aspects are very close to AGILE and we don't want to risk being called UNAGILE, don't we?
+
+Easier said than done - web frameworks nowadays can be very intrusive. Contrary to libraries, frameworks often enforce their structure, vision or conventions on their users, requiring them to adhere to those if they want to use the framework. Some of the frameworks introduce their own CLI tools to setup the aforementioned structure and conventions for you. Some frameworks got so robust and compilcated they need a module to make it a sane experience to setup and start working with them (looking at you, Spring Boot). Is it at all possible to isolate your logic and domain code from those?
+
+My answer to that is - yes, it is possible, although not always easy. I'll try to show you how to isolate the logic and domain code of your application into a no-dependency module that can then be turned into a web application using whatever framework you choose, integrating seemlessly with it's dependency injection mechanism. Of course, the real world is not sunshine and rainbows and complexity tends to sneak in uninvited and often unnoticed - but we have to start somewhere - so the application I'll show will be trivial.
