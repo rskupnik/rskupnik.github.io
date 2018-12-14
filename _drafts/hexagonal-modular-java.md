@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Hexagonal architecture with Java 9 modules
+title: Framework-independent application with hexagonal architecture and Java 9 modules
 ---
 
 Have you ever wondered what would happen if Spring was to suddenly pop out of existence? How easy would it be to migrate your web application to a different framework? Would it be possible at all? Don't worry, this is not one of those posts where I tell you that Spring is the root of all evil and you should try the fancy-new-alternative framework instead! What I do want to tell you, though, is that **strong dependency on some external component is dangerous** and often hinders your project's elasticity and capability to change - those two aspects are very close to AGILE and we don't want to risk being called UNAGILE, don't we?
