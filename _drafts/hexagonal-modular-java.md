@@ -302,10 +302,65 @@ public class ImplementationConfig {
 
 There we go. Dependencies satisfied using the default implementations. All that remains is to add the DTO and controller for *Pet*, and our app is ready to work as a web app.
 
-## Adding Spring-Data
+## Switching In-Memory to Spring-Data
 
 What if we wanted to save the domain data into an actual database instead of keeping it in-memory by using the default implementation?
 
-We can add support for spring-data, but it's not as straightforward. The main problem is that the `Repository` interface our *application* layer defined is incompatible with Spring convention of creating interfaces that extends Spring's `CrudRepository` which Spring then takes and creates implementation for, applying conventional method names.
+We can add support for spring-data, but it's not as straightforward. The main problem is that the `Repository` interface our *application* layer defined is incompatible with Spring's convention of creating interfaces that extend the `CrudRepository` which Spring then takes and creates implementation for, generating conventional method names.
 
 Luckily, there is a way to make incompatible interfaces talk to each other and it's called the [Adapter Design Pattern](https://sourcemaking.com/design_patterns/adapter).
+
+As such, without further ado - let's create out adapter classes. By the way, you can view code for this section in the same repository ([https://github.com/rskupnik/pet-clinic-modular-spring](https://github.com/rskupnik/pet-clinic-modular-spring)), just switch the branch to `spring-data`.
+
+First of all, we need a Spring-Data-compliant interface to adapt to:
+
+```java
+@Repository
+public interface CustomerRepositoryJPA extends CrudRepository<Customer, Long> {
+}
+```
+
+And the adapter itself:
+
+```java
+@Repository
+public class CustomerRepositoryAdapter implements CustomerRepository {
+
+    private final CustomerRepositoryJPA repository;
+
+    @Autowired
+    public CustomerRepositoryAdapter(CustomerRepositoryJPA repository) {
+        this.repository = repository;
+    }
+
+    @Override
+    public List<Customer> getAll() {
+        final List<Customer> output = new ArrayList<>();
+        repository.findAll().forEach(output::add);
+        return output;
+    }
+
+    @Override
+    public Customer get(Long id) {
+        return repository.findById(id).orElse(null);
+    }
+
+    @Override
+    public void add(Customer customer) {
+        repository.save(customer);
+    }
+}
+```
+
+Done. We can use our `CustomerRepositoryAdapter` as a `CustomerRepository` (interface introduced by `application` layer) and it will transparently route to the `CustomerRepositoryJPA` underneath.
+
+We can now simply swap the bean implementation of the `CustomerRepository` interface in the config class:
+
+```java
+@Bean
+public CustomerRepository customerRepository(CustomerRepositoryJPA jpaRepo) {
+    return new CustomerRepositoryAdapter(jpaRepo);
+}
+```
+
+The application will work as it did before, except now it will use Spring-Data to save to an actual database.
