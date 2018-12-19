@@ -364,3 +364,75 @@ public CustomerRepository customerRepository(CustomerRepositoryJPA jpaRepo) {
 ```
 
 The application will work as it did before, except now it will use Spring-Data to save to an actual database.
+
+--
+
+## Switching frameworks
+
+Let's test the elasticity of our solution by attempting to switch the web-tier framework from Spring to Micronaut.
+
+You can view the code for this part here: [https://github.com/rskupnik/pet-clinic-modular-micronaut](https://github.com/rskupnik/pet-clinic-modular-micronaut).
+
+After generating a standard Micronaut project using their CLI tools, all we really need to do is add the dependency on our core application:
+
+```xml
+<dependency>
+    <groupId>com.github.rskupnik.petclinicmodular</groupId>
+    <artifactId>application</artifactId>
+    <version>1.0-SNAPSHOT</version>
+</dependency>
+```
+
+Then add the controllers:
+
+```java
+@Controller("/customers")
+public class CustomerController {
+
+    private final CustomerService customerService;
+
+    public CustomerController(CustomerService customerService) {
+        this.customerService = customerService;
+    }
+
+    @Get(value = "/{id}", produces = MediaType.APPLICATION_JSON)
+    public CustomerDto get(Long id) {
+        return CustomerDto.fromDomain(customerService.get(id));
+    }
+
+    @Get(produces = MediaType.APPLICATION_JSON)
+    public List<CustomerDto> getAll() {
+        return customerService.getAll().stream()
+                .map(CustomerDto::fromDomain).collect(Collectors.toList());
+    }
+
+    @Post(consumes = MediaType.APPLICATION_JSON)
+    public void add(@Body CustomerDto customerDto) {
+        customerService.add(customerDto.toDomain());
+    }
+}
+```
+
+The DTOs are the same as in Spring's solution, so I won't show them again.
+
+The last thing we need is to plug in our implementations into Micronaut's DI system, which in this case is done with a `Factory` class:
+
+```java
+@Factory
+public class CustomerBeanFactory {
+
+    @Bean
+    @Singleton
+    public CustomerRepository customerRepository() {
+        return CustomerRepository.defaultRepository();
+    }
+
+    @Bean
+    @Singleton
+    public CustomerService customerService(CustomerRepository repo, PetService petService) {
+        return CustomerService.defaultService(repo, petService);
+    }
+}
+```
+
+Done. We can now launch the web application as a Micronaut app and observe the same effect as we did with Spring's implementation.
