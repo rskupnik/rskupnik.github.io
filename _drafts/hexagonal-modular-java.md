@@ -19,7 +19,7 @@ Here's what we will achieve:
 
 ## Know thy tools
 
-There are a few concepts and tools being used to achieve our goal. We take a bit from DDD to isolate our domain, use the hexagonal approach to allow our core application of being independent of the input provider (an HTTP server, in this case) and Java 9 modules to make it a bit more fun, but we can very well have done it with Java 8. Let's make sure we have a common understanding of those concepts.
+There are a few concepts and tools being used to achieve our goal. We take a bit from DDD to isolate our domain, use the hexagonal approach to allow our core application of being independent of the input provider (an HTTP server, in this case) and Java 9 modules to make it a bit more fun, but we can very well have done it with Java 8.
 
 ### Hexagonal architecture
 
@@ -98,6 +98,8 @@ public class Pet {
 )
 ```
 
+To avoid making this post unnecessarily long, from now on I'll only show code samples for *Customer*-related classes, skipping the *Pet* ones. The full code can be found on github.
+
 Since we want to use Java 9 modules for fun, there's an additional `module-info.java` file, in which we define the *domain* module and expose the *domain.customer* and *domain.pet* packages.
 
 ```java
@@ -109,7 +111,7 @@ module com.github.rskupnik.petclinicmodular.domain {
 
 ### Application layer
 
-This is the place where we implement business logic. It is also the place where we define our first interfaces as a means of telling the at-this-point-unknown higher layers of how this layer is meant to be used.
+This is the place where we implement business logic. It is also the place where we define our first interfaces as a means of telling the at-this-point-unknown higher layers about how this layer is meant to be used.
 
 In our case, we define `Repository` and `Service` interfaces for both *Pet* and *Customer*. Those interfaces define what actions can be performed on those entities.
 
@@ -173,7 +175,7 @@ public DefaultCustomerService(CustomerRepository customerRepository, PetService 
 }
 ```
 
-How do we satisfy those dependencies, though? Well, that's not a concern of this layer - this layer only needs to define the business logic that manipulates the domain objects. It can selflessly define the dependencies it needs and expect the higher layer to satisfy them, most probably using some sort of dependency injection mechanism.
+How do we satisfy those dependencies? Well, that's not a concern of this layer - this layer only needs to define the business logic that manipulates the domain objects. It can selflessly define the dependencies it needs and expect the higher layer to satisfy them, most probably using some sort of dependency injection mechanism.
 
 Finally, the Java 9 `module-info.java`, which clearly expresses that we depend on the *domain* layer and export some stuff.
 
@@ -239,7 +241,7 @@ public class CustomerDto {
 }
 ```
 
-The static mapper functions should be moved to dedicated *Mapper* classes in a real application.
+The static mapper functions should be moved to dedicated *Mapper* classes in a real application, but let's keep it simple for now.
 
 And a basic controller:
 
@@ -310,7 +312,7 @@ We can add support for spring-data, but it's not as straightforward. The main pr
 
 Luckily, there is a way to make incompatible interfaces talk to each other and it's called the [Adapter Design Pattern](https://sourcemaking.com/design_patterns/adapter).
 
-As such, without further ado - let's create out adapter classes. By the way, you can view code for this section in the same repository ([https://github.com/rskupnik/pet-clinic-modular-spring](https://github.com/rskupnik/pet-clinic-modular-spring)), just switch the branch to `spring-data`.
+As such, without further ado - let's create our adapter classes. By the way, you can view code for this section in the same repository ([https://github.com/rskupnik/pet-clinic-modular-spring](https://github.com/rskupnik/pet-clinic-modular-spring)), just switch the branch to `spring-data`.
 
 First of all, we need a Spring-Data-compliant interface to adapt to:
 
@@ -365,6 +367,8 @@ public CustomerRepository customerRepository(CustomerRepositoryJPA jpaRepo) {
 
 The application will work as it did before, except now it will use Spring-Data to save to an actual database.
 
+Obviously, it's not an ideal solution, as we lose the benefit of Spring's auto-generated methods and need to write the basic logic ourselves in the adapter class.
+
 --
 
 ## Switching frameworks
@@ -413,7 +417,7 @@ public class CustomerController {
 }
 ```
 
-The DTOs are the same as in Spring's solution, so I won't show them again.
+The DTOs are the same as in Spring's solution, no need to show them again.
 
 The last thing we need is to plug in our implementations into Micronaut's DI system, which in this case is done with a `Factory` class:
 
@@ -436,3 +440,80 @@ public class CustomerBeanFactory {
 ```
 
 Done. We can now launch the web application as a Micronaut app and observe the same effect as we did with Spring's implementation.
+
+---
+
+## Testing
+
+This layered and isolated approach has a huge benefit of being easy to integration test without fighting the web framework in the process. Of course, testing the full application with the web layer included should still be conducted, but I'll show you how we can create tests that check the core application's logic without worrying about how it was triggered.
+
+You can view the tests here: [https://github.com/rskupnik/pet-clinic-modular](https://github.com/rskupnik/pet-clinic-modular)
+
+We'll use Spock for testing, so let's first add the necessary dependencies to our pom:
+
+```xml
+<dependency>
+    <groupId>org.spockframework</groupId>
+    <artifactId>spock-core</artifactId>
+    <version>1.2-groovy-2.4</version>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>org.codehaus.groovy</groupId>
+    <artifactId>groovy-all</artifactId>
+    <version>2.4.15</version>
+</dependency>
+
+...
+
+<plugin>
+    <groupId>org.codehaus.gmavenplus</groupId>
+    <artifactId>gmavenplus-plugin</artifactId>
+    <version>1.6</version>
+    <executions>
+        <execution>
+            <goals>
+                <goal>compile</goal>
+                <goal>compileTests</goal>
+            </goals>
+        </execution>
+    </executions>
+</plugin>
+```
+
+Now we can create tests that check the behaviour of our whole application (running on default implementations):
+
+```groovy
+class ApplicationSpec extends Specification {
+
+    def "should store and retrieve a customer with a list of pets"() {
+        given:
+        def app = createCustomerService()
+        def customer = new Customer("John", "Smith", [new Pet("Barry")])
+
+        when:
+        app.add(customer)
+        def retrievedCustomer = app.get(1L)
+
+        then:
+        retrievedCustomer != null
+        retrievedCustomer.firstName == customer.firstName
+        retrievedCustomer.lastName == customer.lastName
+        retrievedCustomer.pets != null && !retrievedCustomer.pets.isEmpty()
+        retrievedCustomer.pets.get(0).name == customer.pets.get(0).name
+    }
+
+    def createCustomerService() {
+        return new DefaultCustomerService(new DefaultCustomerRepository(),
+         new DefaultPetService(new DefaultPetRepository()))
+    }
+}
+```
+
+---
+
+## Summary
+
+Hexagonal architecture is a powerful concept when it comes to increasing encapsulation and cohesion and decreasing coupling of our codebase; and it's based on stuff that's been very well known for decades now: interfaces and abstraction layers. I honestly thing interfaces are one of those concepts that you only start to appreciate once your truly realise the provided benefits.
+
+Applying hexagonal architecture is difficult, as it requires discipline and careful code review for people who are not used to isolating the domain and tend to make everything public by default. It also definitely isn't a silver bullet to be used everywhere and everytime, but is worth considering if you're looking for maintainability, decreasing dependency burden on your frameworks and overall readability not only of your codebase, but also the domain.
