@@ -19,6 +19,8 @@ Here's what we'll try to achieve:
     <img src="{{sitre.baseurl}}/public/images/hexagonal-example.png" style="width: auto; display: block; margin-left: auto; margin-right: auto;" alt="Overview of the hexagonal architecture"/>
 </p>
 
+I will demonstrate the idea using Java and tools/frameworks from the Java ecosystem, but it's really just a preference and the notion itself can be easily applied to other languages.
+
 ---
 
 ## Know thy tools
