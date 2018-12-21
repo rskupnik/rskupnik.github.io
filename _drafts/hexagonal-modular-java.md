@@ -1,9 +1,11 @@
 ---
 layout: post
-title: Achieving a framework-independent zen with the power of interfaces and hexagonal architecture
+title: Achieving framework-independent zen with the power of interfaces and hexagonal architecture
 ---
 
-Have you ever wondered what would happen if Spring was to suddenly pop out of existence? How easy would it be to migrate your web application to a different framework? Would it be possible at all? Don't worry, this is not one of those posts where I tell you that Spring is the root of all evil and you should try the fancy-new-alternative framework instead! What I do want to tell you, though, is that **strong dependency on external components is dangerous** and often hinders your project's elasticity and capability to change - those two aspects are very close to AGILE and we don't want to risk being called UNAGILE, don't we?
+Have you ever wondered what would happen if Spring was to suddenly pop out of existence? How easy would it be to migrate your web application to a different framework? Would it be possible at all? 
+
+Don't worry, this is not one of those posts where I tell you that Spring is the root of all evil and you should try the fancy-new-alternative framework instead! What I do want to tell you, though, is that **strong dependency on external components is dangerous** and often hinders your project's elasticity and capability to change - those two aspects are very close to AGILE and we don't want to risk being called UNAGILE, don't we?
 
 "Easier said than done", you might say, as web frameworks nowadays can be very intrusive. Contrary to libraries, they often enforce their structure, vision or conventions on us, making it necessary to adhere to those if we want to use the framework. Some of them introduce their own CLI tools to setup the aforementioned structure and conventions for you. Some others got so robust and compilcated they need a module to make it a sane experience to start working with them (looking at you, Spring Boot). Is it at all possible to isolate your logic and domain code in this situation?
 
@@ -11,21 +13,23 @@ My answer to that is - yes, it is possible - although not always easy. I'll try 
 
 Of course, the real world is not sunshine and rainbows and complexity tends to sneak in uninvited and often unnoticed. Being able to swap your domain logic from one framework to another without any issues is probably nigh impossible, but hexagonal architecture at least allows us to consider that as a realistic option, instead of a 2-year-long huge-risk endeavour that we use to scare our product owners with.
 
-Here's what we will achieve:
+Here's what we'll try to achieve:
 
-(TODO: An image of the hexagonal core)
+<p>
+    <img src="{{sitre.baseurl}}/public/images/hexagonal-example.png" style="width: auto; display: block; margin-left: auto; margin-right: auto;" alt="Overview of the hexagonal architecture"/>
+</p>
 
 ---
 
 ## Know thy tools
 
-There are a few concepts and tools being used to achieve our goal. We take a bit from DDD to isolate our domain, use the hexagonal approach to allow our core application of being independent of the input provider (an HTTP server, in this case) and Java 9 modules to make it a bit more fun, but we can very well have done it with Java 8.
+There are a few concepts and tools being used to achieve our goal. We take a bit from DDD to isolate our domain, use the hexagonal approach to give our core application independence from the input provider (an HTTP server, in this case) and Java 9 modules to make it a bit more fun, but we could very well have done it with Java 8.
 
 ### Hexagonal architecture
 
 Hexagonal architecture is a huge topic, so I'll only mention the few key aspects here. If you want to know more, Chris Fidao has created a great article about it - you can find it [here](https://fideloper.com/hexagonal-architecture).
 
-Hexagonal architecture is about structuring our application in layers, where each layer sits on top of the previous one and introduces potential third-party dependencies it might need to fulfill it's job - the important part here is that each layer only brings in what it really needs. In other words, the dependencies are **moving in**. For example, the domain logic of our application can do perfectly fine without knowing the notion of an "HTTP Request", so our *domain* and *application* layers don't need any web-related dependencies. But, once we arrive at a point when we want the domain logic to be triggerbale via HTTP, we need to introduce a dependency - in our case, that will happen in the *framework* layer.
+Hexagonal architecture is about structuring our application in layers, where each layer sits on top of the previous one and introduces potential third-party dependencies it might need to fulfill it's job - the important part here is that each layer only brings in what it really needs. In other words, the dependencies are **moving in**. For example, the domain logic of our application can do perfectly fine without knowing the notion of an "HTTP Request", so our *domain* and *application* layers don't need any web-related dependencies. But, once we arrive at a point where we want the domain logic to be triggerbale via HTTP, we need to introduce a dependency - in our case, that will happen in the *framework* layer.
 
 "Why a hexagon", you might ask. That's just a visual way of showing that our application exposes *Ports* as a means of telling the higher layers how it should be used. Using the powerful notion of *interfaces* we achieve per-layer independence.
 
@@ -33,7 +37,13 @@ Hexagonal architecture is about structuring our application in layers, where eac
 
 ## Let's get dirty
 
-First of all, we'll create a Maven project to hold two modules, each one representing a hexagonal layer: *domain* and *application*.
+The first thing we need to create is our core application - it will contain the domain and business logic, without any implementation-specific dependency or framework.
+
+<p>
+    <img src="{{sitre.baseurl}}/public/images/hexagonal-1.png" style="width: auto; display: block; margin-left: auto; margin-right: auto;" alt="Core application"/>
+</p>
+
+We'll create a Maven project to hold two modules, each one representing a hexagonal layer: *domain* and *application*.
 
 The *domain* layer will hold classes which represent the model of our application, while the *application* layer will hold some basic business logic that manages those classes.
 
@@ -54,7 +64,7 @@ It's a basic multimodule maven layout, nothing fancy. Make sure you reference yo
 
 We will model a pet clinic, which has two domain objects - a *Customer* and a *Pet*. A *Customer* can have many *Pets*, and a particular *Pet* can only belong to one *Customer*. Basic one-to-many relationship. Our app will let us register a *Customer* with a list of *Pets*, list all the *Customers* and their *Pets*, list a single *Customer* and list all *Pets*. Again, just basic CRUD stuff.
 
-It's not really important what the app does, it's just to have a concrete example to apply the idea to.
+Yes, it is a trivial app. That being said, it's not really important what it does - we just need a concrete example to display the idea.
 
 Our domain has a `pom.xml` with zero dependencies and the two classes, *Customer* and *Pet*:
 
@@ -194,6 +204,12 @@ That's it, we now have a very basic application with no external dependencies. I
 ---
 
 ## Springification
+
+Let's now try to put our core application inside Spring's web framework so that it's accessible with HTTP requests.
+
+<p>
+    <img src="{{sitre.baseurl}}/public/images/hexagonal-2.png" style="width: auto; display: block; margin-left: auto; margin-right: auto;" alt="Hexagonal app with Spring added"/>
+</p>
 
 This part of the code can be viewed here: [https://github.com/rskupnik/pet-clinic-modular-spring](https://github.com/rskupnik/pet-clinic-modular-spring).
 
@@ -375,6 +391,10 @@ Obviously, it's not an ideal solution, as we lose the benefit of Spring's auto-g
 
 Let's test the elasticity of our solution by attempting to switch the web-tier framework from Spring to Micronaut.
 
+<p>
+    <img src="{{sitre.baseurl}}/public/images/hexagonal-3.png" style="width: auto; display: block; margin-left: auto; margin-right: auto;" alt="Hexagonal app with Micronaut instead of Spring"/>
+</p>
+
 You can view the code for this part here: [https://github.com/rskupnik/pet-clinic-modular-micronaut](https://github.com/rskupnik/pet-clinic-modular-micronaut).
 
 After generating a standard Micronaut project using their CLI tools, all we really need to do is add the dependency on our core application:
@@ -447,6 +467,10 @@ Done. We can now launch the web application as a Micronaut app and observe the s
 
 This layered and isolated approach has a huge benefit of being easy to integration test without fighting the web framework in the process. Of course, testing the full application with the web layer included should still be conducted, but I'll show you how we can create tests that check the core application's logic without worrying about how it was triggered.
 
+<p>
+    <img src="{{sitre.baseurl}}/public/images/hexagonal-4.png" style="width: auto; display: block; margin-left: auto; margin-right: auto;" alt="Testing the app"/>
+</p>
+
 You can view the tests here: [https://github.com/rskupnik/pet-clinic-modular](https://github.com/rskupnik/pet-clinic-modular)
 
 We'll use Spock for testing, so let's first add the necessary dependencies to our pom:
@@ -510,10 +534,12 @@ class ApplicationSpec extends Specification {
 }
 ```
 
+We have full control over how we initiate and trigger the core application as a whole. In this case, we just use the default implementations and trigger the `add` and then `get` API methods to conduct the tests. It's obviously very simple, but demonstrates the point - once we have our isolated core under control, we can insert it into a testing frame of our creation to poke and test it however we need to.
+
 ---
 
 ## Summary
 
-Hexagonal architecture is a powerful concept when it comes to increasing encapsulation and cohesion and decreasing coupling of our codebase; and it's based on stuff that's been very well known for decades now: interfaces and abstraction layers. I honestly thing interfaces are one of those concepts that you only start to appreciate once your truly realise the provided benefits.
+Hexagonal architecture is a powerful concept when it comes to increasing encapsulation and cohesion and decreasing coupling of our codebase; and it's based on stuff that's been very well known for decades now: **interfaces** and **abstraction layers**. I honestly think interfaces are very underestimated, especially among the young practitioners - you only begin to appreciate them once you realise the power they give you - and that usually comes with experience.
 
-Applying hexagonal architecture is difficult, as it requires discipline and careful code review for people who are not used to isolating the domain and tend to make everything public by default. It also definitely isn't a silver bullet to be used everywhere and everytime, but is worth considering if you're looking for maintainability, decreasing dependency burden on your frameworks and overall readability not only of your codebase, but also the domain.
+**Applying hexagonal architecture is difficult**, as it requires discipline and careful code review for people who are not used to isolating the domain and tend to make everything public by default. It also definitely **isn't a silver bullet** to be used everywhere and everytime, but is worth considering if you're looking for **maintainability**, **decreasing dependency burden on your frameworks** and overall **readability** not only of your codebase, but also the domain. There is some overhead introduced - and potential integration issues are possible - so if you're just looking to hack away at your pet project and are ok with sacrificing maintainability and elasticity, while also not planning to switch any major frameworks and libraries then you're probably better off without these ideas (but I would still use interfaces to isolate from third-party).
