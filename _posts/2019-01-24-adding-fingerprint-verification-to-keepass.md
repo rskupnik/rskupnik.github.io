@@ -5,7 +5,11 @@ title: Adding fingerprint verification to KeePass
 
 ---
 
-Youtube version: https://www.youtube.com/watch?v=NcYSvI1M3UI
+<p>
+    <img src="{{site.baseurl}}/public/images/rpi_finger_gif_2.gif" style="width: auto; display: block; margin-left: auto; margin-right: auto;" alt="Presentation gif of how it works"/>
+</p>
+
+Youtube version of this video: [https://www.youtube.com/watch?v=NcYSvI1M3UI](https://www.youtube.com/watch?v=NcYSvI1M3UI)
 
 ## The idea
 
@@ -58,7 +62,7 @@ Here's the whole thing broken down into tasks:
 Using the four female-female jumper cables, connect the 5v, GND, TX and RX pins to Raspberry Pi. Remember to connect the TX of the device to RX of the Raspberry Pi and the other way around.
 
 <p>
-    <img src="{{site.baseurl}}/public/images/raspberrypi.PNG" style="width: auto; display: block; margin-left: auto; margin-right: auto;" alt="Connecting wires"/>
+    <img src="{{site.baseurl}}/public/images/rpi_finger_wires.png" style="width: auto; display: block; margin-left: auto; margin-right: auto;" alt="Connecting wires"/>
 </p>
 
 Unfortunately, Raspberry Pi 3 requires some configuration tweaks to enable the proper UART device for arbitrary use. By default, the UART device is reserved for Bluetooth and the TX and RX pins route to the so-called mini-UART. The problem with this is that the mini-UART has a CPU-dependent baud rate and is known for causing communication issues with the connected devices. Since we don't need bluetooth, we can disable it and modify Raspberry Pi to route the TX and RX pins to the proper UART device instead.
@@ -73,9 +77,9 @@ After a restart we should have everything read to go. We can check that by runni
     <img src="{{site.baseurl}}/public/images/rpi_ama0_enabled.png" style="width: auto; display: block; margin-left: auto; margin-right: auto;" alt="serial0 pointing to ttyAMA0"/>
 </p>
 
-## Write an HTTP server
+## Writing an HTTP server
 
-I've found it easier to do in Python, but it can be done in any language and technology you can create an HTTP server in.
+I've found it easier to do in Python, but it can be done in any language and technology you can create an HTTP server in and access serial.
 
 The server will handle two requests at the root url:
 * GET will trigger the fingerprint scanner into check-fingerprint mode, wait for the user to put his finger against the scanner and interpret the response from the device - the server will return a 200 OK or a 413 FORBIDDEN based on the response from the scanner
@@ -88,8 +92,9 @@ Before we can do all this, we need to know how to communicate with the fingerpri
 From the image above we get the following info:
 * We need to use 19200 baud rate
 * Communication is done in 8-byte packets
-* We directly control only 4 from those 4 bytes, the rest is either static or derived
+* We directly control only 4 from those 4 bytes, the rest is either static or derived (my code needs 5 bytes specified, but one is always 0 - oops)
 * In the response, we mainly need to check the 5th byte - `0x00` indicates success
+* We need to do some xoring for the checksum, which is weird since the xor value seems to always be 0 - but it works so whatevs :)
 
 ### Sending and receiving bytes over UART
 
@@ -256,4 +261,9 @@ private void OnEntryCopyPassword(object sender, EventArgs e)
 }
 ```
 
-That's all!
+Here's a github commit version of the above change: [https://github.com/rskupnik/KeePass2.x/commit/4e6962b25e5461c55fe12629ab7ce04a024918af](https://github.com/rskupnik/KeePass2.x/commit/4e6962b25e5461c55fe12629ab7ce04a024918af)
+
+---
+## That's all folks!
+
+To get this thing started we just need to run the python code on our Raspberry Pi, make sure the address of the Pi used in the C# code is alright - then simply build the KeePass project, run it and there you go - you can see the outcome at the top of this page or here: [https://www.youtube.com/watch?v=NcYSvI1M3UI](https://www.youtube.com/watch?v=NcYSvI1M3UI)
