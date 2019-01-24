@@ -5,6 +5,8 @@ title: Adding fingerprint verification to KeePass
 
 ---
 
+Youtube version: https://www.youtube.com/watch?v=NcYSvI1M3UI
+
 ## The idea
 
 * Modify KeePass's code to make an HTTP call to my local raspberry pi device whenever a password is requested
