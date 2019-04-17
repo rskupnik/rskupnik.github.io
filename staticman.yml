@@ -1,3 +1,6 @@
 allowedFields: ["name", "email", "message"]
 filename: "{@id}"
+branch: "master"
+path: "data/comments/{options.postId}"
+filename: "{@id}"
 
