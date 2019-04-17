@@ -1,0 +1,3 @@
+allowedFields: ["name", "email", "message"]
+filename: "{@id}"
+

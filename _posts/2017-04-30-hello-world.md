@@ -19,3 +19,13 @@ There also seems to be some kind of a tradition that people making blogs using J
 I also promise to not overuse the :) emote as much as I did in this post.
 
 Stay tuned and remember to have fun, whatever you're doing! (unless it's illegal or something, then you should not :) )
+
+<form method="POST" action="https://dev.staticman.net/v3/entry/github/rskupnik/rskupnik-github-io/master">
+  <!-- e.g. "2016-01-02-this-is-a-post" -->
+  <input name="options[slug]" type="hidden" value="{{ page.slug }}">
+  <label><input name="fields[name]" type="text">Name</label>
+  <label><input name="fields[email]" type="email">E-mail</label>
+  <label><textarea name="fields[message]"></textarea>Message</label>
+  
+  <button type="submit">Go!</button>
+</form>
