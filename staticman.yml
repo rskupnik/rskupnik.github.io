@@ -1,6 +1,7 @@
-allowedFields: ["name", "email", "message"]
-filename: "{@id}"
-branch: "master"
-path: "data/comments/{options.postId}"
-filename: "{@id}"
+comments:
+    allowedFields: ["name", "email", "message"]
+    filename: "{@id}"
+    branch: "master"
+    path: "_data/comments/{options.postId}"
+    filename: "{@id}"
 
