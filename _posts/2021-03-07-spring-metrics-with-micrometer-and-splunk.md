@@ -14,6 +14,8 @@ Before we move into the "how to" part, let me describe a few tools we're going t
 - [Telegraf](https://www.influxdata.com/time-series-platform/telegraf/) - this is our "dedicated backend". It's responsible for receiving raw measurement data, aggregate it and send it to the dashboard
 - [Splunk](https://www.splunk.com/) - Splunk is the final destination for our metrics data, it's the engine we're going to use to turn those magical numbers into pretty visuals
 
+All the code and configuration files for this example can be found on [github](https://github.com/rskupnik/spring-metrics-with-splunk)
+
 ---
 
 ## How to do it
@@ -178,7 +180,7 @@ You might have noticed there is an `Authorization` header included in the output
 The first thing we need to do is prepare a config file. Luckily, Splunk's docker image contains a tool to generate one for us:
 
 ```
-docker run --rm -it -e SPLUNK_PASSWORD=<password> splunk/splunk:latest create-defaults > default.yml
+docker run --rm -it -e SPLUNK_PASSWORD=<password> splunk/splunk:latest create-defaults > spring-config.yml
 ```
 
 Once it's created, find a `hec` section inside and make sure it's enabled and the proper password is specified. Then copy the token and put it in the `telegraf.conf` under `Authorization` and `X-Splunk-Request-Channel`.
@@ -224,6 +226,8 @@ metric.timestampResolution = ms
 
 That's all we need. We can now run `docker-compose up` and wait a few minutes for Splunk to come up. After that we can login at `localhost:8000` with `admin` and the password you've set. After logging in, we need to go to Settings -> Data inputs and edit the `splunk_hec_token`- select "spring_metrics" under "Selected Indexes" and save.
 
+![Splunk token config]({{site.baseurl}}/public/images/splunk_token_config.png)
+
 If you now launch the application itself, give it a minute or two and go to "Search" in Splunk you can see available metrics after running
 
 ```
@@ -238,6 +242,10 @@ You can now use these metrics to create dashboards. Here's an example of a searc
   | mstats max(_value) as memoryCommitted where index=spring_metrics metric_name="jvm_memory_committed.value" span=30s | eval memoryCommitted=memoryCommitted/(1024*1024)
 ] | timechart max(memoryUsed) as memoryUsed, max(memoryCommitted) as memoryCommitted span=30s
 ```
+
+You should get something like this:
+
+![Splunk graph example]({{site.baseurl}}/public/images/splunk_diagram_example.png)
 
 ---
 ## A few words on scale
