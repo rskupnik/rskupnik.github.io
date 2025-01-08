@@ -5,8 +5,6 @@ title: To comment, or not to comment
 
 ---
 
-Hi there
-
 When working in professional Java projects or looking through open source projects, we can come across several styles of commenting code and various opinions on how it should be done. Some people like to insert pseudocode-like comments everywhere they can, others claim that commenting should be avoided at all costs as it's a sign of poor design. Let's have a look at what tools does Java give us when it comes to commenting code and then let me share with you my opinion on when and how to use them.
 
 ---
