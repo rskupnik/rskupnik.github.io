@@ -42,7 +42,7 @@ System.out.println("Hello, World!");
 > Very short comments can appear on the same line as the code they describe, but should be shifted far enough to separate them from the statements. If more than one short comment appears in a chunk of code, they should all be indented to the same tab setting.
 
 ```java
-System.out.println("Hello, World!");	/* This is a trailing comment */
+System.out.println("Hello, World!"); /* This is a trailing comment */
 ```
 
 ### End-of-line comments
@@ -57,7 +57,7 @@ System.out.println("foo");
 //	System.out.println("bar");
 //}
 
-return false;		// Explain why false is returned
+return false;	// Explain why false is returned
 ```
 
 ### Documentation comments
@@ -66,7 +66,9 @@ return false;		// Explain why false is returned
 
 ```java
 /**
- * This is a javadoc comment. Notice the double * at the opening, which distinguishes it from a block comment.
+ * This is a javadoc comment.
+ * Notice the double * at the opening,
+ * which distinguishes it from a block comment.
  */
 ```
 
@@ -93,8 +95,8 @@ For example, you might have a large listener class that reads events from a `Rab
  * Events that this listener listens for are generated and inserted into the queue
  * in module X, when the user does this and that on the reviews page.
  *
- * This Listener will process the events and send them to API X or move them to an error queue if processing
- * fails for any reason.
+ * This Listener will process the events and send them to API X or move them 
+ * to an error queue if processing fails for any reason.
  *
  * There are a few flags in the properties file that control the behaviour of this logic:
  * ...
@@ -125,7 +127,9 @@ Therefore, when I happen to work on a long, complex and far-from-ideal (for vari
 
 ```java
 // (...) a lot of code here
-boolean isPreemptivelyProcessed = false;	// 'Preemptively processed' in this case means data from module X has been collected and added to the processed object
+// 'Preemptively processed' in this case means data
+// from module X has been collected and added to the processed object
+boolean isPreemptivelyProcessed = false;	
 // (...) more code
 ```
 
