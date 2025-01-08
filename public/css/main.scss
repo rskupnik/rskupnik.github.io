@@ -39,6 +39,10 @@ hr,
   margin-bottom: 20px;
 }
 
+pre.highlight {
+  white-space: pre-wrap;
+}
+
 blockquote {
   padding: 0 30px;
   border-left: 2px solid darken($site-background-color, 15%);
