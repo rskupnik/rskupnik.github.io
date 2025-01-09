@@ -41,6 +41,7 @@ hr,
 
 pre.highlight {
   white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 blockquote {
@@ -69,6 +70,7 @@ img.img-raw {
 
 a {
   text-decoration: none;
+  word-wrap: break-word;
 }
 
 hr {
@@ -87,7 +89,7 @@ p code {
   border: 1px solid #ddd;
   background-color: #f8f8f8;
   border-radius: 3px;
-  white-space: nowrap;
+  white-space: pre-wrap;
 }
 
 table {
