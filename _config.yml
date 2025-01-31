@@ -5,7 +5,7 @@ description: A blog on various topics related to programming
 highlighter: null
 permalink: /:title
 
-url: https://rskupnik.github.io
+url: http://blog.example.com
 baseurl: 
 
 sass:
