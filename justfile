@@ -1,4 +1,6 @@
 build:
+    rm -rf _site
+    rm -rf .jekyll-cache
     docker run --rm -v "$PWD":/srv/jekyll -w /srv/jekyll jekyll/jekyll jekyll build
 
 start:
