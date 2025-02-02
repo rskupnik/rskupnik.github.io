@@ -5,7 +5,7 @@ description: A blog on various topics related to programming
 highlighter: null
 permalink: /:title
 
-url: http://blog.example.com
+url: https://myzopotamia.dev
 baseurl: 
 
 sass:
