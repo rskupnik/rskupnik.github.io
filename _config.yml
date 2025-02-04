@@ -14,5 +14,13 @@ sass:
   
 show_drafts: false
 
+plugins:
+  - jekyll-analytics
+
 # Google services
-google_analytics: G-X5RCN5WZEZ
+# google_analytics: G-X5RCN5WZEZ
+
+jekyll_analytics:
+  Matomo:                   # Add, if you want to track with Matomo (former Piwik Analytics)
+    url: raspberrypi5.local/matomo
+    siteId: "1"          # Required - replace with your Matomo site id (Write id as string)
