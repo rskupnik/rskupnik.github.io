@@ -30,6 +30,6 @@
 <!-- feed links -->
 <link rel="alternate" href="{{ site.url }}{{ site.baseurl }}/feed.xml" type="application/rss+xml" title="{{ site.name }}">
 
-{% if site.google_analytics and jekyll.environment == 'production' %}
+{% if site.matomo_analytics %}
 {% include analytics.html %}
 {% endif %}

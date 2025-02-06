@@ -14,10 +14,6 @@ sass:
   
 show_drafts: false
 
-plugins:
-  - jekyll-analytics
-
-jekyll_analytics:
-  Matomo:
-    url: stats.myzopotamia.dev
-    siteId: "1"
+matomo_analytics:
+  url: stats.myzopotamia.dev
+  siteId: "1"
