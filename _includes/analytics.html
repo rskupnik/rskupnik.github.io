@@ -13,10 +13,10 @@
   _paq.push(['enableLinkTracking']);
   (function() {
     var u='//'+"{{ site.matomo_analytics.url }}";
-    _paq.push(['setTrackerUrl', u+'/piwik.php']);
+    _paq.push(['setTrackerUrl', u+'/'+"{{ site.matomo_analytics.customTrackerFile }}"]);
     _paq.push(['setSiteId', '{{ site.matomo_analytics.siteId }}']);
     var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-    g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'/piwik.js'; s.parentNode.insertBefore(g,s);
+    g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'/'+"{{ site.matomo_analytics.customTrackerFile }}"+'.js'; s.parentNode.insertBefore(g,s);
   })();
 </script>
 <!-- End Matomo Code -->

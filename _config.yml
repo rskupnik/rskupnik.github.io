@@ -17,3 +17,4 @@ show_drafts: false
 matomo_analytics:
   url: stats.myzopotamia.dev
   siteId: "1"
+  customTrackerFile: stats
