@@ -4,8 +4,6 @@ title: Hello, world
 published: false
 ---
 
-Testing Matomo
-
 It's nice to meet y'all :) Following the trend that everyone in IT should have a blog, I've decided to create one for myself.
 
 I'll write about stuff that interests me and probably from time to time spur out some random thoughts on how cool something is or rants on how uncool something is (*cough* javascript *cough*) :)
