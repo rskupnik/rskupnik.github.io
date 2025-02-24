@@ -5,16 +5,12 @@ published: false
 ---
 
 TODOS:
-* TLDR (embedd a gist?)
-* Replace myzopotamia.dev with `<your_custom_domain>`
-* Some diagram
 * Info panels
-
-Might be useful to describe how to setup traefik beforehand to link to that (or at least a gist)
+* Prereq: how to self-host a blog (the Cloudflare Tunnel part)
 
 ---
 
-I tried self-hosting n8n and I love it, but there was one problem I was facing - I could not create Credentials for Google integrations (Drive, Gmail, etc.) because it required my n8n instance to be reachable from the internet.
+I tried self-hosting **n8n** and I love it, but there was one problem I was facing - I could not create Credentials for Google integrations (Drive, Gmail, etc.) because it required my n8n instance to be reachable from the internet.
 
 I solved it by exposing only that one particular path that Google needs to reach on my reverse proxy setup and keeping the rest hidden.
 
@@ -23,11 +19,15 @@ This is a known issue and there are many solutions, this is just one of them. It
 * A custom domain (not entirely sure if it is required, but I already had one)
 * Reverse proxy (I use traefik)
 
+![Self-host n8n and expose cred path]({{site.baseurl}}/public/images/selfhost-n8n.png)
+
+If you know what this is all about and just want a quick recipe - here's a TLDR for you. Otherwise, scroll past TLDR, and I will do my best to explain!
+
 ---
 
 ## TLDR
 
-TODO
+<script src="https://gist.github.com/rskupnik/4f0b388b5cc60e50c4f489cd565e4723.js"></script>
 
 ---
 
@@ -46,7 +46,7 @@ Prerequisites - what I will **NOT** describe here (out of scope):
 * How to setup a Raspberry Pi
 * How to create an OAuth client on Google
 * How to setup your DNS
-* How to setup traefik reverse proxy from the grounds up (only how to **configure** an existing installation)
+* How to setup traefik reverse proxy from the grounds up - I already described that [here](/traefik-reverse-proxy-with-containers)
 
 ---
 
@@ -68,24 +68,24 @@ services:
       N8N_PROTOCOL: http
       N8N_SECURE_COOKIE: false
       NODE_ENV: production
-      WEBHOOK_URL: https://n8n.myzopotamia.dev/
+      WEBHOOK_URL: https://n8n.yourcustomdomain.com/
     volumes:
       - n8n_data:/home/node/.n8n
     networks:
-      - raspberry-pi-network
+      - your-network
 
 volumes:
   n8n_data:
 
 networks:
-  raspberry-pi-network:
-    name: raspberry-pi-network
+  your-network:
+    name: your-network
 ```
 
 It is quite self-explanatory, but let me explain a few important items here:
 * The `n8n.home` value of `N8N_HOST` is my internal domain, it will only work from within my local network
 * `WEBHOOK_URL` is set to my DNS domain (with a subdomain of `n8n` for clarity) so that n8n produces a properly formatted OAuth URL
-* The `raspberry-pi-network` Docker network needs to be the same network that **traefik** container also connects to - so that it is able to redirect traffic to **n8n**
+* The `your-network` Docker network needs to be the same network that **traefik** container also connects to - so that it is able to redirect traffic to **n8n**
 
 ### How to deploy this to Raspberry Pi
 
@@ -119,6 +119,8 @@ If you don't know what `just` and `justfiles` are - [Just](https://github.com/ca
 
 ## Plugging in to traefik reverse proxy
 
+(Describing how to setup Traefik as a Reverse Proxy is out of scope for this post, but if you are interested I have a dedicated post on that [here](/traefik-reverse-proxy-with-containers))
+
 At this point you should have **n8n** up and running, but we want to be able to access it from within the home network. In my case, I want it to be available under `n8n.home/`. This is **not** something that will work by default, if you want that particular domain to work for your internal network you need to configure it in your DNS (**pihole** in my case) - just point it at the IP address of your Raspberry Pi
 
 I prefer working with Dynamic Configurations in **traefik** instead of using labels, here's my initial configuration for **n8n**:
@@ -142,7 +144,7 @@ http:
 
 It's as simple as they come - we want traffic from the host **n8n.home** to be directed to **http://n8n:5678**. This weird URL is constructed from the **container_name** param in n8n's docker-compose file and the port n8n expects to be reached on (`N8N_PORT`). Traefik will be able to reach n8n through this URL **only if they live in the same Docker network**.
 
-After restarting **traefik** with this new configuration you should now be able to reach **n8n** from within my local network on `n8n.home/` (or whatever domain you want to use internally)
+After restarting **traefik** with this new configuration you should now be able to reach **n8n** from within your local network on `n8n.home/` (or whatever domain you want to use internally)
 
 ---
 
@@ -158,7 +160,7 @@ The URL that Google needs to be able to reach is: `<base_url>/rest/oauth2-creden
 
 Let's start by modifying **traefik**'s configuration (the same one created in the previous step).
 
-Apart from accessing from `n8n.home` internally, we want that specific `/rest/oauth2-credential` URL to also be reachable from the internet - but only for the `n8n.myzopotamia.dev` host (which is my custom domain).
+Apart from accessing from `n8n.home` internally, we want that specific `/rest/oauth2-credential` URL to also be reachable from the internet - but only for the `n8n.yourcustomdomain.com` host.
 
 To do that I added modified the Dynamic Configuration for **traefik** to look like this:
 
@@ -171,14 +173,14 @@ http:
         - "web"
       service: "n8n"
 
-    n8n_myzopotamia:
-      rule: "Host(`n8n.myzopotamia.dev`) && PathPrefix(`/rest/oauth2-credential`)"
+    n8n_yourcustomdomain:
+      rule: "Host(`n8n.yourcustomdomain.com`) && PathPrefix(`/rest/oauth2-credential`)"
       entrypoints:
         - "web"
       service: "n8n"
       
-    n8n_myzopotamia_deny:
-      rule: "Host(`n8n.myzopotamia.dev`)"
+    n8n_yourcustomdomain_deny:
+      rule: "Host(`n8n.yourcustomdomain.com`)"
       entrypoints:
         - "web"
       service: "deny-all"
@@ -196,14 +198,14 @@ http:
 ```
 
 Notice two additional *routers*:
-* *n8n_myzopotamia* router will direct traffic to **n8n** container if it comes from `n8n.myzopotamia.dev` host and only for the `/rest/oauth2-credential` path
-* *n8n_myzopotamia_deny* router will **deny** all other traffic on the host `n8n.myzopotamia.dev` (by directing it to `http://0.0.0.0`, which will not resolve) (not sure if there is a better way to do it, let me know a better solution!)
+* *n8n_yourcustomdomain* router will direct traffic to **n8n** container if it comes from `n8n.yourcustomdomain.com` host and only for the `/rest/oauth2-credential` path
+* *n8n_yourcustomdomain_deny* router will **deny** all other traffic on the host `n8n.yourcustomdomain.com` (by directing it to `http://0.0.0.0`, which will not resolve) (not sure if there is a better way to do it, let me know a better solution!)
 
 Great! All that is left to be done is to let `cloudflared` (setting up of which is outside the scope for this post) know about my `n8n.myzoptamia.dev` domain and tell it to direct traffic for it to `traefik`. I add this to `cloudflared`'s config (again, it is able to reach `http://traefik:80` because those containers connect to the same network)
 
 ```yaml
 (...)
-- hostname: n8n.myzopotamia.dev
+- hostname: n8n.yourcustomdomain.com
     service: http://traefik:80
 (...)
 ```
@@ -212,5 +214,5 @@ Great! All that is left to be done is to let `cloudflared` (setting up of which 
 
 That's it! At this point you should be able to:
 * Reach **n8n** in it's entirety from `n8n.home` (or whatever internal domain you use)
-* Be able to setup OAuth Credentials for Google because `https://n8n.myzopotamia.dev/rest/oauth2-credential` will resolve and reach the destination
-* No other part of **n8n** will be reachable from `https://n8n.myzopotamia.dev`
+* Be able to setup OAuth Credentials for Google because `https://n8n.yourcustomdomain.com/rest/oauth2-credential` will resolve and reach the destination
+* No other part of **n8n** will be reachable from `https://n8n.yourcustomdomain.com`
