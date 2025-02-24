@@ -56,6 +56,7 @@ GEM
     terminal-table (2.0.0)
       unicode-display_width (~> 1.1, >= 1.1.1)
     unicode-display_width (1.8.0)
+    webrick (1.9.1)
 
 PLATFORMS
   x86_64-linux-musl
@@ -63,6 +64,7 @@ PLATFORMS
 DEPENDENCIES
   jekyll (~> 4.2.2)
   kramdown-parser-gfm
+  webrick (~> 1.8, >= 1.8.1)
 
 BUNDLED WITH
    2.3.25
