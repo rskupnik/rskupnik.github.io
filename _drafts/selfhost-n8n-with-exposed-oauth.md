@@ -14,7 +14,7 @@ Might be useful to describe how to setup traefik beforehand to link to that (or 
 
 ---
 
-I tried self-hosting n8n and I love it, but there was one problem I was facing - I could not Credentials for Google integrations (Drive, Gmail, etc.) because it required my n8n instance to be reachable from the internet.
+I tried self-hosting n8n and I love it, but there was one problem I was facing - I could not create Credentials for Google integrations (Drive, Gmail, etc.) because it required my n8n instance to be reachable from the internet.
 
 I solved it by exposing only that one particular path that Google needs to reach on my reverse proxy setup and keeping the rest hidden.
 
