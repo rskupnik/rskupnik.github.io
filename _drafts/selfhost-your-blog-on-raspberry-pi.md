@@ -4,11 +4,6 @@ title: How to self-host a simple, static blog on a Raspberry Pi with Jekyll, Doc
 published: false
 ---
 
-TODO:
-* Cloudflare setup
-* Hosting blog with nginx
-* Jekyll setup
-
 ---
 
 When I first created this blog, I settled on using Jekyll and decided to use [GitHub Pages](https://pages.github.com/) as a cost-free hosting solution. That served me well for many years, but once I started playing around with my Raspberry Pi, I really wanted to also use it for hosting my own blog! This is what this post will be about - **how to host your blog on a Raspberry Pi**, using **Jekyll** for *content generation*, **Docker** for *containerization* and **Cloudflare** for *exposing it to the world*!
