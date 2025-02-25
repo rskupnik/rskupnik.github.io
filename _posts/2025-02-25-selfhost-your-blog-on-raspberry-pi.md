@@ -1,6 +1,6 @@
 ---
 layout: post
-title: How to self-host a simple, static blog on a Raspberry Pi with Jekyll, Docker and a Cloudflare
+title: How to self-host a simple, static blog on a Raspberry Pi with Jekyll, Docker and Cloudflare
 published: false
 ---
 
@@ -161,9 +161,7 @@ This is a basic configuration that will serve the files in `/usr/share/nginx/htm
 
 Note: We want to use Cloudflare to expose this to the world, which is why we are using `yourcustomdomain.com` and we are not exposing port 80 from nginx container. If you want to be able to access your page from your local network at this stage - expose the port 80 on the nginx container (assuming nothing else on Raspberry Pi claimed that port yet) and delete the `server_name` line from *nginx.conf*.
 
----
-
-## Pushing all of this to Raspberry Pi
+### Pushing all of this to Raspberry Pi
 
 We got our **nginx** docker-compose file and a *nginx.conf* file, let's now create a `justfile` that will push all of this to Raspberry Pi, along with the static website files.
 
