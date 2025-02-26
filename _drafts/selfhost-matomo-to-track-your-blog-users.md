@@ -4,7 +4,7 @@ title: How to self-host Matomo to gain visibility of your blog
 published: false
 ---
 
-Where do I cross the line - only track basic things
+Where do I draw the line - only track basic things
 
 What about track blockers?
 
