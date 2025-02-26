@@ -18,10 +18,12 @@ There are several problems with hosting Pi-hole on a sub-path reverse proxy:
 * Pi-hole does some redirections using the `Location` header - which will be invalid if you don't handle it properly
 * It will not be able to find static assets (CSS files, JS scripts, etc.)
 
+---
+
 ## The solution
 
 To solve these, I have setup two *middlewares* in my *traefik* config file for Pi-hole:
-* Rewrite `/pihole/` to `/admin` so Pi-hole can handle those properly
+* Rewrite `/pihole/` to `/admin/` so Pi-hole can handle those properly
 * Replace `admin` in the `Location` header with `pihole`
 
 Here's how the config file looks like:
@@ -65,8 +67,6 @@ Note: The `rewriteheaders` middleware is not available by default, it's a plugin
 I installed that plugin by adding these two flags to my **traefik** setup:
 * `--experimental.plugins.rewriteheaders.modulename=github.com/virtualzone/rewriteheaders`
 * `--experimental.plugins.rewriteheaders.version=v0.2.0`
-
----
 
 With this in place, Pi-hole should work under the `/pihole` path without any issues
 
