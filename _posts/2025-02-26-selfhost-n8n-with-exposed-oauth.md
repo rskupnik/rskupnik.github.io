@@ -1,16 +1,11 @@
 ---
 layout: post
 title: How to self-host n8n but expose the path for OAuth2 authentication
-published: false
 ---
-
-TODOS:
-* Info panels
-* Prereq: how to self-host a blog (the Cloudflare Tunnel part)
 
 ---
 
-I tried self-hosting **n8n** and I love it, but there was one problem I was facing - I could not create Credentials for Google integrations (Drive, Gmail, etc.) because it required my n8n instance to be reachable from the internet.
+I tried self-hosting **n8n** and I love it, but there was one problem I was facing - I could not create Credentials for Google integrations (Drive, Gmail, etc.) because it required my n8n instance to be reachable from the internet - and I really wanted to keep it private.
 
 I solved it by exposing only that one particular path that Google needs to reach on my reverse proxy setup and keeping the rest hidden.
 
@@ -35,7 +30,7 @@ If you know what this is all about and just want a quick recipe - here's a TLDR 
 
 I am currently self-hosting all of my apps on my **Raspberry Pi 5** using **Docker**.
 
-One of the containers is **traefik** which serves as a reverse proxy.
+One of the containers is **traefik** which [serves as a reverse proxy](/traefik-reverse-proxy-with-containers).
 
 What I want to show you in this post:
 1. How to create a `docker-compose.yml` file to deploy n8n to RPi
@@ -201,7 +196,13 @@ Notice two additional *routers*:
 * *n8n_yourcustomdomain* router will direct traffic to **n8n** container if it comes from `n8n.yourcustomdomain.com` host and only for the `/rest/oauth2-credential` path
 * *n8n_yourcustomdomain_deny* router will **deny** all other traffic on the host `n8n.yourcustomdomain.com` (by directing it to `http://0.0.0.0`, which will not resolve) (not sure if there is a better way to do it, let me know a better solution!)
 
-Great! All that is left to be done is to let `cloudflared` (setting up of which is outside the scope for this post) know about my `n8n.myzoptamia.dev` domain and tell it to direct traffic for it to `traefik`. I add this to `cloudflared`'s config (again, it is able to reach `http://traefik:80` because those containers connect to the same network)
+### Updating Cloudflare setup
+
+Great! All that is left to be done is to let `cloudflared` know about `n8n.yourcustomdomain.com` domain and tell it to direct traffic for it to `traefik`.
+
+Setting up Cloudflare Tunnel is outside of the scope of this post, but I have described it as part of my *How to host a blog on Raspberry Pi with Jekyll, Docker and Cloudflare* post - you can read it [here](/selfhost-your-blog-on-raspberry-pi#exposing-it-to-the-world-with-cloudflare)
+
+I add this to `cloudflared`'s config (again, it is able to reach `http://traefik:80` because those containers connect to the same network)
 
 ```yaml
 (...)
