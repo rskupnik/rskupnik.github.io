@@ -284,3 +284,19 @@ The website should show a Connector once a connection is established and allow y
 ---
 
 Once this is done and you give it a bit of time, accessing **yourcustomdomain.com** should result in viewing the contents of your blog on the Raspberry Pi!
+
+---
+
+## BONUS: Redirect users from your previous Github Pages setup
+
+If you are like me and you were using Github Pages to host your Jekyll-based blog before, you might be interested in setting up a CNAME redirect from `yourgithubusername.github.io` to your new `yourcustomdomain.com`.
+
+I found it useful because I often linked to my `github.io` page in the resumes I sent out throughout my life - I would like people going to that page to instead be directed to my new Raspberry Pi hosting.
+
+You need to do two things:
+* In your `github.io` repository, create a `CNAME` file with `yourcustomdomain.com` inside
+* In your `github.io` repo, go to Settings -> Pages (under Code & Automation) and put `yourcustomdomain.com` as a "Custom domain"
+
+Give it some time to refresh the DNS and it should work!
+
+More details: [Github docs](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site) and [this StackOverflow discussion](https://stackoverflow.com/questions/30167113/redirect-github-pages-to-custom-domain)
