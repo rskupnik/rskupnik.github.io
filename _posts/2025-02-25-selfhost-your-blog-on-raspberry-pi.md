@@ -1,7 +1,6 @@
 ---
 layout: post
 title: How to self-host a simple, static blog on a Raspberry Pi with Jekyll, Docker and Cloudflare
-published: false
 ---
 
 ---
