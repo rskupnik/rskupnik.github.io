@@ -43,6 +43,8 @@ I love it because, as a programmer, I find Markdown files very intuitive and eas
 
 The generated website is **static**, meaning you can just use a simple server to host it. It's great for simple blogs that just want to deliver their contents to an audience and don't need any *interactive* features, such as comments (although there are solutions for that as well!). Because the website is static, it is also **lightweight**.
 
+Storing your blog contents as Markdown has another benefit of being able to back it up easily as a means of archiving. See [this post Piotr Migdał](https://p.migdal.pl/blog/2025/02/markdown-saves)
+
 ### How to start with Jekyll
 
 You can certainly just follow the [Quickstart](https://jekyllrb.com/docs/) on Jekyll's webpage, but I dislike permanently installing software that I only need occasionally (to generate the website) so I will show you how to do that with Docker.
