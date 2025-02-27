@@ -123,6 +123,23 @@ footer {
   text-align: center;
 }
 
+@media screen and (max-width: 480px) {  /* Apply padding only on screens less than 480px */
+  .me-image {
+    display: block;
+    width: 250px;
+    margin: auto;
+    padding-bottom: 20px;
+  }
+}
+
+@media screen and (min-width: 480px) {  /* Apply padding only on screens wider than 480px */
+  .me-image {
+    padding: 0px 30px 0px 0px;
+    float: left;
+    width: 250px;
+  }
+}
+
 /*============================================================================*/
 .azul { a { color: $azul-accent-color;
     &:hover { color: darken($azul-accent-color, 20%);

@@ -3,7 +3,8 @@ layout: page
 title: About
 ---
 
-My name is *Radosław Skupnik*, I live in *Poland*, and I'm a *self-taught* software engineer and a computer enthusiast.
+![A picture of me]({{site.baseurl}}/public/images/me.jpg){: class="me-image" loading="lazy"}
+My name is Radosław Skupnik, I live in Poland, and I'm a self-taught software engineer and a computer enthusiast.
 
 When I started, I had fun with *Turbo Pascal*. I was 12 back then and the year was 2001, so my greatest achievement was a RAT application which I used to prank my friend three houses down the road over LAN (yeah, houses on the street were joined in a single LAN back then). Ahh, those were the times...
 
@@ -14,3 +15,5 @@ Those were probably somewhat illegal back then? I'm not sure, but as a kid, I ha
 Nowadays I work as a DevOps Engineer and I spend my working hours setting up Kubernetes clusters, automating stuff with Terraform and studying the Clouds.
 
 From less important information, I love cats, nature, walks in the forest and gaming - mainly *Path of Exile* and *Factorio*
+
+<div style="clear: both">
