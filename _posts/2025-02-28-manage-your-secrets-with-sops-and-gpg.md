@@ -60,9 +60,9 @@ sops:
 
 Notice how only the **WEBPASSWORD** environment variable is encrypted, and still in such a way that the structure of the entire file is preserved and easy to read.
 
-There's also a `sops` section added at the bottom which tells SOPS which key was used so it knows how to decrypt.
+There's also a `sops` section added at the bottom which tells SOPS which key was used so it knows how to decrypt. That section is removed when you decrypt the file, so it looks the same as before being encrypted.
 
-Such a file is totally safe to commit to the repository - nobody will decrypt the contents without access to the key that was used to encrypt them.
+Such a file is totally safe to commit to the repository - nobody will decrypt the contents without access to the key that was used to encrypt them - and you can still read through it, even when it's encrypted.
 
 ---
 
@@ -95,4 +95,4 @@ Make the regexes match what you want to encrypt and then just run `sops --encryp
 
 ---
 
-That's it! It's a really simple but powerful tool. It has a lot of feature, including support for keys stored in cloud, keeping `.plaintext` files which you can then add to `.gitignore`, etc. I encourage you to have a look at their [github page](https://github.com/getsops/sops/tree/main) for all the things it can do.
+That's it! It's a really simple but powerful tool. It has a lot of features, including support for keys stored in cloud, keeping `.plaintext` files which you can then add to `.gitignore`, etc. I encourage you to have a look at their [github page](https://github.com/getsops/sops/tree/main) for all the things it can do.

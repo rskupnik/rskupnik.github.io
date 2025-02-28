@@ -3,16 +3,16 @@ layout: post
 title: How to setup local network domains with dockerized Traefik and Pihole
 ---
 
-If you're running a reverse proxy on your setup, you might want to setup easy local domains to access your applications. For example:
+If you're running a reverse proxy, you might want to setup easy local domains to access your applications. For example:
 * **http://pihole.home/** for PiHole
 * **http://matomo.home/** for Matomo
 * **http://n8n.home/** for N8N
 
 etc.
 
-It's quite easy to setup with Traefik as a Reverse Proxy and Pihole as a DNS provider
+It's quite easy to do with Traefik as a Reverse Proxy and Pihole as a DNS provider
 
-Note: I won't be explaining how to setup Traefik and Pihole, as I already have separate posts on that:
+Note: I won't be explaining installation of Traefik and Pihole, as I already have separate posts on that:
 * [Traefik Reverse Proxy for containerized applications](/traefik-reverse-proxy-with-containers)
 * [Self-host Pi-hole behind a reverse proxy](/selfhost-pihole-on-reverse-proxy)
 
