@@ -1,0 +1,28 @@
+name: Build & Deploy
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ether-runner-myzopotamia
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        run: docker buildx create --use
+
+      - name: Build Docker Image
+        run: |
+          docker buildx build \
+            --cache-from type=local,src=/mnt/docker-cache \
+            --cache-to type=local,dest=/mnt/docker-cache \
+            --load \
+            -t myzopotamia \
+            -f Dockerfile .
+      
+      - name: Push Docker image
+        run: |
+          export DOCKER_CONFIG=/tmp/docker-config
+          docker tag blog rskupnik/ether:blog
+          docker push rskupnik/ether:blog
