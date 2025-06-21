@@ -5,3 +5,7 @@ drafts/
 .gitignore
 justfile
 start.sh
+.DS_Store
+*.swp
+_site
+.github

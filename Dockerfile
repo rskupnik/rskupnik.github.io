@@ -1,24 +1,23 @@
 FROM ruby:3.0-alpine AS builder
 
-# Switch to root so we can set up permissions correctly
-# USER root
-
+# Install system dependencies
 RUN apk add --no-cache build-base nodejs npm git
 
+# Create and set work directory
 WORKDIR /site
+
+# Install Jekyll and Bundler gems
+RUN gem install bundler jekyll
+
+# Cache gem dependencies
+COPY Gemfile Gemfile.lock ./
+RUN bundle install
+
+# Copy the rest of the source files
 COPY . .
 
-# Fix permissions for the jekyll user
-# RUN chown -R jekyll:jekyll /site
-
-# Use environment variables to avoid permission issues with gems/cache
-ENV GEM_HOME=/tmp/gems \
-    BUNDLE_PATH=/tmp/gems \
-    JEKYLL_CACHE_DIR=/tmp/.jekyll-cache
-
-RUN gem install bundler jekyll \
-    && bundle install \
-    && bundle exec jekyll build
+# Build the Jekyll site
+RUN bundle exec jekyll build
 
 FROM nginx:alpine
 
