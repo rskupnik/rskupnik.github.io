@@ -10,7 +10,7 @@ run:
 
 build:
     docker buildx create --use
-    docker buildx build --platform linux/arm64 -t myzopotamia-blog --load .
+    docker buildx build -t myzopotamia-blog --load .
 
 push:
     docker tag myzopotamia-blog rskupnik/myzopotamia-blog

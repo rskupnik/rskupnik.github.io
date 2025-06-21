@@ -1,25 +1,28 @@
-FROM ruby:3.0-alpine AS builder
+FROM jekyll/jekyll:4.2.2 AS builder
 
 # Switch to root so we can set up permissions correctly
-# USER root
-
-RUN apk add --no-cache build-base nodejs npm git
+USER root
 
 WORKDIR /site
+
+# Copy site source files into the image
 COPY . .
 
 # Fix permissions for the jekyll user
-# RUN chown -R jekyll:jekyll /site
+RUN chown -R jekyll:jekyll /site
 
 # Use environment variables to avoid permission issues with gems/cache
 ENV GEM_HOME=/tmp/gems \
     BUNDLE_PATH=/tmp/gems \
     JEKYLL_CACHE_DIR=/tmp/.jekyll-cache
 
-RUN gem install bundler jekyll \
-    && bundle install \
-    && bundle exec jekyll build
+# Drop back to the jekyll user
+USER jekyll
 
+# Install dependencies and build the site
+RUN bundle install && bundle exec jekyll build
+
+# Stage 2: Nginx to serve the static site
 FROM nginx:alpine
 
 RUN rm -rf /usr/share/nginx/html/*
