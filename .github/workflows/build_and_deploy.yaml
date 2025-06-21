@@ -11,13 +11,19 @@ jobs:
 
       - name: Set up Docker Buildx
         run: docker buildx create --use
+      
+      - name: Debug Cache Contents
+        run: |
+          ls -lah /mnt/docker-cache
+          df -h /mnt/docker-cache
+          echo $DOCKER_BUILDKIT
 
       - name: Build Docker Image
         run: |
           docker buildx build \
             --platform linux/arm64 \
             --cache-from type=local,src=/mnt/docker-cache \
-            --cache-to type=local,dest=/mnt/docker-cache \
+            --cache-to type=local,dest=/mnt/docker-cache,mode=max \
             --load \
             -t blog \
             -f Dockerfile .
