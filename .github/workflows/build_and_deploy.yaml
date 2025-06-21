@@ -19,7 +19,7 @@ jobs:
             --cache-from type=local,src=/mnt/docker-cache \
             --cache-to type=local,dest=/mnt/docker-cache \
             --load \
-            -t myzopotblogamia \
+            -t blog \
             -f Dockerfile .
       
       - name: Push Docker image
