@@ -39,3 +39,14 @@ jobs:
           export DOCKER_CONFIG=/tmp/docker-config
           docker tag blog rskupnik/ether:blog
           docker push rskupnik/ether:blog
+      
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.33.2'
+      
+      - name: Restart deployment with annotation
+        run: |
+          kubectl patch deployment myzopotamia-blog \
+            -n blog \
+            -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"ci-restart-timestamp\":\"$(date +%s)\"}}}}}"
