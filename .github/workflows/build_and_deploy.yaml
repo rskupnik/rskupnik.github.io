@@ -1,5 +1,11 @@
 name: Build & Deploy
 on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - '_drafts/**'
+      - '.github/**'
   workflow_dispatch:
 
 jobs:
