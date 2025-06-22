@@ -16,6 +16,4 @@ Nowadays I work as a DevOps Engineer and I spend my working hours setting up Kub
 
 From less important information, I love cats, nature, walks in the forest and gaming - mainly *Path of Exile* and *Factorio*
 
-This is a test
-
 <div style="clear: both">
