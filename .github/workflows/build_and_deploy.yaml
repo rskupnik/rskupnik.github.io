@@ -37,7 +37,7 @@ jobs:
       - name: Push Docker image
         run: |
           export DOCKER_CONFIG=/tmp/docker-config
-          docker tag blog registry.gitlab.com/rskupnik/ether/blog:latest
+          docker tag blog registry.gitlab.com/myzreal/ether/blog:latest
           docker push registry.gitlab.com/myzreal/ether/blog:latest
       
       - name: Install kubectl
