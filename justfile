@@ -4,8 +4,8 @@ build-old:
     docker run --rm -v "$PWD":/srv/jekyll jekyll/jekyll:4.2.2 sh -c "bundle install && bundle exec jekyll build"
 
 run:
-    rm -rf _site
-    rm -rf .jekyll-cache
+    rm -rf _site || true
+    rm -rf .jekyll-cache || true
     docker run --rm -p 4000:4000 -v "$PWD:/srv/jekyll:Z" jekyll/jekyll:4.2.2 jekyll serve
 
 build:
