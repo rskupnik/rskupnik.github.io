@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Fluid simulation explained with Godot game engine
+title: Navier-Stokes fluid simulation explained with Godot game engine
 published: false
 ---
 
@@ -20,7 +20,7 @@ Learning materials I used:
 
 You can find all of the code in this repository: [github.com/rskupnik/godot-fluid-simulation-demo](https://github.com/rskupnik/godot-fluid-simulation-demo)
 
-I used git commits to mark code checkpoints matching the chapters of this blog post, so if you don't want to write the code alongside you can make use of the [commit view](https://github.com/rskupnik/godot-fluid-simulation-demo/commits/master/) to follow along. For your convenience, I include a "project snapshot" and a "diff" link at each chapter, which lead to, respectively: the codebase at this point and the commit diff view
+I used git commits to mark code checkpoints matching the chapters of this blog post, so if you don't want to write the code alongside reading, you can make use of the [commit view](https://github.com/rskupnik/godot-fluid-simulation-demo/commits/master/) to follow along. For your convenience, I include a "project snapshot" and a "diff" link at each chapter, which lead to, respectively: the codebase at the discussed point and the commit diff view
 
 TODO: Image here
 
@@ -426,7 +426,7 @@ With this, the velocity arrows should now slowly fade back to nothing
 TODO: fluid_sim_4 vid
 
 ---
-## Time to get serious - density advection
+## Let's get the flow going
 
 [Project snapshot](https://github.com/rskupnik/godot-fluid-simulation-demo/tree/bdca2f5280606bcbb504a91a101ddc74a45b74c1)
 
@@ -627,3 +627,489 @@ TODO: fluid_sim_6 vid
 
 ---
 ## Set some boundaries
+
+[Project snapshot](https://github.com/rskupnik/godot-fluid-simulation-demo/tree/aedc58935862dacd6a8f4bfdb0708f4820ed42c2)
+
+[Diff](https://github.com/rskupnik/godot-fluid-simulation-demo/commit/aedc58935862dacd6a8f4bfdb0708f4820ed42c2)
+
+It's time to set some boundaries - and by that I mean making the walls of the simulation behave like walls. The effect won't be much right now but it is necessary to implement.
+
+The approach is rather simple. For each boundary cell, we want to copy the density value of the neighbour. That will make the regular cells around it behave properly in our advection and diffusion calculations. We also want to make those boundary cells reverse the velocity values of the nearest real cell - so a left boundary cell should look at the real cell to the right (which is the leftmost real cell) and reverse the horizontal velocity. That will make that boundary cell act as a wall which "reflects" the fluid. Same for top and bottom boundary cells and vertical velocities. For corner boundary cells we'll simply average between their boundary neighbours.
+
+Now, this equation described in Stam's paper is condensed, but also difficult to understand. I have decided to include the original function to show how it could look like - but then we will implement it on our own in a way that is less condensed and probably elss performant, but should be easier to understand what is going on.
+
+So first - here is the original function as described by Stam. I only show it for reference - it is not called by anything in the codebase.
+
+```
+# This is the "original" function as defined in the Stam paper
+# It is NOT USED by this program. I left it only for reference
+# It is much more performant because it doesn't declare needless variables
+# But that also make is harder to understand what is going on here
+func set_bnd_original(b: int, grid: PackedFloat32Array) -> void:
+	for i in range(1, N + 1):
+		grid[IX(0, i)] = -grid[IX(1, i)] if b == 1 else grid[IX(1, i)]
+		grid[IX(N + 1, i)] = -grid[IX(N, i)] if b == 1 else grid[IX(N, i)]
+
+		grid[IX(i, 0)] = -grid[IX(i, 1)] if b == 2 else grid[IX(i, 1)]
+		grid[IX(i, N + 1)] = -grid[IX(i, N)] if b == 2 else grid[IX(i, N)]
+
+	grid[IX(0, 0)] = 0.5 * (grid[IX(1, 0)] + grid[IX(0, 1)])
+	grid[IX(0, N + 1)] = 0.5 * (grid[IX(1, N + 1)] + grid[IX(0, N)])
+	grid[IX(N + 1, 0)] = 0.5 * (grid[IX(N, 0)] + grid[IX(N + 1, 1)])
+	grid[IX(N + 1, N + 1)] = 0.5 * (grid[IX(N, N + 1)] + grid[IX(N + 1, N)])
+```
+
+Alright, we will now implement the same concept on our own without condensing it so much, so hopefully it should be easier to follow what is going on here
+
+```
+enum BoundaryType {
+	DENSITY,
+	VELOCITY_HORIZONTAL,
+	VELOCITY_VERTICAL
+}
+
+# This function handles boundary cells, which are not part of the simulation. It effectively
+# establishes a "wall". We do this by making each boundary cell copy values of their simulated neighbour,
+# modifying them accordingly if needed.
+# For density, we simply copy the value
+# This makes both density advection (moving along velocity field) and diffusion behave properly near borders
+# For velocity, we also copy the value of a simulated neighbour but we invert part of it.
+# For top/bottom walls, we invert the vertical values, for left/right we invert the horizontal values
+# This makes the boundaries behave as "walls" for velocity - density will bounce off them due to reflected velocity
+# Note: I realize declaring so many needless variables is bad for performance. This is done on purpose
+# to make it easier to understand what is going on here. Original function included, see "set_bnd_original"
+func set_bnd(boundary: BoundaryType, grid: PackedFloat32Array) -> void:
+	
+	# We iterate from 1 to N+1 because we want to tackle boundaries, which are a single row/column
+	# With a single loop going from 1 to N+1 we handle each row and column at once, because each of them
+	# is exactly the same size
+	for i in range(1, N + 1):
+		
+		# These define the indexes of boundary cells (the red ones)
+		# We will set values for those
+		var left_boundary_cell_index = IX(0, i)
+		var right_boundary_cell_index = IX(N + 1, i)
+		var bottom_boundary_cell_index = IX(i, 0)
+		var top_boundary_cell_index = IX(i, N + 1)
+		
+		# These define the nearest cell neighbour of a boundary cell that is a real cell
+		# We will copy values from those
+		var leftmost_simulated_cell_index = IX(1, i)
+		var rightmost_simulated_cell_index = IX(N, i)
+		var bottommost_simulated_cell_index = IX(i, 1)
+		var topmost_simulated_cell_index = IX(i, N)
+		
+		# For density, we simply copy the value of the nearest simulated cell
+		if boundary == BoundaryType.DENSITY:
+			grid[left_boundary_cell_index] = grid[leftmost_simulated_cell_index]
+			grid[right_boundary_cell_index] = grid[rightmost_simulated_cell_index]
+			grid[bottom_boundary_cell_index] = grid[bottommost_simulated_cell_index]
+			grid[top_boundary_cell_index] = grid[topmost_simulated_cell_index]
+		
+		# For horizontal velocity, we flip the values on the horizontal axis (the boundary wall
+		# "reflects" the velocity) and just copy the vertical values
+		elif boundary == BoundaryType.VELOCITY_HORIZONTAL:
+			grid[left_boundary_cell_index] = -grid[leftmost_simulated_cell_index]
+			grid[right_boundary_cell_index] = -grid[rightmost_simulated_cell_index]
+			grid[bottom_boundary_cell_index] = grid[bottommost_simulated_cell_index]
+			grid[top_boundary_cell_index] = grid[topmost_simulated_cell_index]
+		
+		# For vertical velocity, we flip the values on the vertical axis (the boundary wall
+		# "reflects" the velocity) and just copy the horizontal values
+		elif boundary == BoundaryType.VELOCITY_VERTICAL:
+			grid[left_boundary_cell_index] = grid[leftmost_simulated_cell_index]
+			grid[right_boundary_cell_index] = grid[rightmost_simulated_cell_index]
+			grid[bottom_boundary_cell_index] = -grid[bottommost_simulated_cell_index]
+			grid[top_boundary_cell_index] = -grid[topmost_simulated_cell_index]
+
+	# Corners
+	# Boundary corner cells are a special case because they have two neighbours (both of which are boundary cells as well)
+	# Since we already set the values for all the other boundary cells in the loop above,
+	# here we just set each corner to an average of their two neighbours
+	# For ease of understanding I labeled the vars with SW like South-West, etc.
+	var corner_SW = IX(0, 0)
+	var corner_SW_right_neighbour = IX(1, 0)
+	var corner_SW_top_neighbour = IX(0, 1)
+	var corner_NW = IX(0, N + 1)
+	var corner_NW_right_neighbour = IX(1, N + 1)
+	var corner_NW_bottom_neighbour = IX(0, N)
+	var corner_SE = IX(N + 1, 0)
+	var corner_SE_left_neighbour = IX(N, 0)
+	var corner_SE_top_neighbour = IX(N + 1, 1)
+	var corner_NE = IX(N + 1, N + 1)
+	var corner_NE_left_neighbour = IX(N, N + 1)
+	var corner_NE_bottom_neighbour = IX(N + 1, N)
+	
+	grid[corner_SW] = 0.5 * (grid[corner_SW_right_neighbour] + grid[corner_SW_top_neighbour])		# SW corner = right neighbour + top neighbour
+	grid[corner_NW] = 0.5 * (grid[corner_NW_right_neighbour] + grid[corner_NW_bottom_neighbour])	# NW corner = right neighbour + bottom neighbour
+	grid[corner_SE] = 0.5 * (grid[corner_SE_left_neighbour] + grid[corner_SE_top_neighbour])		# SE corner = left neighbour + top neighbour
+	grid[corner_NE] = 0.5 * (grid[corner_NE_left_neighbour] + grid[corner_NE_bottom_neighbour])		# NE corner = left neighbour + bottom neighbour
+```
+
+Both the original function and mine accomplish the same thing.
+
+With this function present we now need to call it. Add this at the end of `advect_density` and for each iterative loop in `diffuse_density` (refer to the git diff if confused)
+
+```
+set_bnd(BoundaryType.DENSITY, density)
+```
+
+The effect right now is small but this is what will allow are density to properly bounce off walls later on
+
+TODO: fluid_sim_7 vid
+
+---
+## Spread the love
+
+[Project snapshot](https://github.com/rskupnik/godot-fluid-simulation-demo/tree/f2b598a4d469353d85c0cfdfa4ac38a7494db331)
+
+[Diff](https://github.com/rskupnik/godot-fluid-simulation-demo/commit/f2b598a4d469353d85c0cfdfa4ac38a7494db331)
+
+Just as we make density diffuse over time, we now should do the same for velocities. We want them to spread around gently just like density does.
+
+The way to accomplish this is exactly the same as with density diffusion - we will use Gauss-Seidel relaxation formula to iteratively approximate the values. If you need details, I refer you back to the chapter that discussed density diffusion.
+
+As usual, let's start with variables
+
+```
+@export var velocity_diffuse_rate := 0.001		# Strength of velocity diffusion effect
+@export var velocity_diffuse_iterations := 20	# How many iterations when diffusing velocity
+```
+
+Now a helper function to snaphsot the velocity arrays
+
+```
+func copy_velocity_to_prev() -> void:
+	for idx in range(size):
+		u_prev[idx] = u[idx]
+		v_prev[idx] = v[idx]
+```
+
+And now the function itself, including the call to `set_bnd` to update the boundary cells
+
+```
+# Diffusion here can be understood as "spreading among neighbour cells"
+# Just as we diffuse density, we now do the same for velocity
+# This is pretty much exactly the same as density diffusion, except it does it for two arrays
+# (because we store horizontal and vertical velocity separately)
+# It uses the same "Gauss-Seidel relaxation" formula
+func diffuse_velocity(delta: float) -> void:
+	
+	# This is the strength of diffusion effect for this frame
+	# Delta is how much time passed
+	# Then we have the velocity diffusion strength parameter
+	# Finally we multiply by N squared so it scales with cell size
+	var a := delta * velocity_diffuse_rate * N * N
+
+	for k in range(velocity_diffuse_iterations):
+		for j in range(1, N + 1):
+			for i in range(1, N + 1):
+				var idx := IX(i, j)
+
+				# Those are exactly the same formulas as for density
+				# See density diffusion function for explanations :)
+				u[idx] = (
+					u_prev[idx] +
+					a * (
+						u[IX(i - 1, j)] +
+						u[IX(i + 1, j)] +
+						u[IX(i, j - 1)] +
+						u[IX(i, j + 1)]
+					)
+				) / (1.0 + 4.0 * a)
+
+				v[idx] = (
+					v_prev[idx] +
+					a * (
+						v[IX(i - 1, j)] +
+						v[IX(i + 1, j)] +
+						v[IX(i, j - 1)] +
+						v[IX(i, j + 1)]
+					)
+				) / (1.0 + 4.0 * a)
+		set_bnd(BoundaryType.VELOCITY_HORIZONTAL, u)
+		set_bnd(BoundaryType.VELOCITY_VERTICAL, v)
+```
+
+Finally, remember to update `_process()`
+
+```
+func _process(delta: float) -> void:
+	copy_velocity_to_prev()		# Add this
+	diffuse_velocity(delta)		# and this
+	
+	copy_density_to_prev()
+	diffuse_density(delta)
+
+	copy_density_to_prev()
+	advect_density(delta)
+
+	fade_density(delta)
+	fade_velocity(delta)
+
+	queue_redraw()
+```
+
+Velocity should now spread just like density does
+
+Note: I have modified the values of previously added modifiers: `velocity_add_scale = 0.12` and `velocity_diffuse_rate = 0.01`. If you are following along and you effect is different from this recording - this might be the reason
+
+TODO: fluid_sim_8 vid
+
+---
+## The river flows
+
+[Project snapshot](https://github.com/rskupnik/godot-fluid-simulation-demo/tree/421641c420e841a9bb4e5ac1346634062f4e044d)
+
+[Diff](https://github.com/rskupnik/godot-fluid-simulation-demo/commit/421641c420e841a9bb4e5ac1346634062f4e044d)
+
+At this point we have:
+* Velocity diffusion
+* Density diffusion
+* Density advection
+
+What we are missing is velocity advection. That's right - we want the velocity field to be able to move *itself*. As a reminder - advection means moving something along a vector field. In this case, we want the velocities themselves to follow the velocity field - this will simulate flow.
+
+Luckily - we already know how to do that! It will be exactly the same approach as with density advection. We will go backwards in time, calculate where the velocity might have come from, find the source cells, calculate fractional weights to know how much each source cell should contribute and calculate the value with bilinear equations. There are two minor differences: one is that we did it on one array for density but for velocity we have two arrays. The other one is that for density we did not modify the velocity arrays so there was no need to snapshot them - but here we do. So we need a snapshot
+
+ I refer you back to density advection for details.
+
+```
+# When we advect density, we move density along the velocity field
+# Here we do the same but with the velocity itself - so we move velocity along the velocity field
+# This simulates sort of "momentum"
+# It works exactly the same way as advecting density, with one caveat - we have to snapshot the
+# velocity arrays and use the snapshot as source (because we modify the actual velocity array in this function,
+# which doesn't happen for density)
+# See "advect_density" function for details
+func advect_velocity(delta: float) -> void:
+	var dt0 := delta * N
+
+	for j in range(1, N + 1):
+		for i in range(1, N + 1):
+			var idx := IX(i, j)
+
+			# Go backwards through time
+			# Notice we are using u_prev and v_prev here - we need stable values
+			# The rest of the function is the same as for advecting density
+			var x := i - dt0 * u_prev[idx]
+			var y := j - dt0 * v_prev[idx]
+			x = clamp(x, 0.5, N + 0.5)
+			y = clamp(y, 0.5, N + 0.5)
+
+			# Find cell neighborus for the point we arrive at
+			var i0 := int(floor(x))
+			var i1 := i0 + 1
+			var j0 := int(floor(y))
+			var j1 := j0 + 1
+
+			# Calculate fractional weights
+			var s1 := x - i0
+			var s0 := 1.0 - s1
+			var t1 := y - j0
+			var t0 := 1.0 - t1
+
+			# Approximate the values using bilinear interpolation
+			u[idx] = (
+				s0 * (t0 * u_prev[IX(i0, j0)] + t1 * u_prev[IX(i0, j1)]) +
+				s1 * (t0 * u_prev[IX(i1, j0)] + t1 * u_prev[IX(i1, j1)])
+			)
+
+			v[idx] = (
+				s0 * (t0 * v_prev[IX(i0, j0)] + t1 * v_prev[IX(i0, j1)]) +
+				s1 * (t0 * v_prev[IX(i1, j0)] + t1 * v_prev[IX(i1, j1)])
+			)
+
+	set_bnd(BoundaryType.VELOCITY_HORIZONTAL, u)
+	set_bnd(BoundaryType.VELOCITY_VERTICAL, v)
+```
+
+And update `_process()`
+
+```
+func _process(delta: float) -> void:
+	copy_velocity_to_prev()
+	diffuse_velocity(delta)
+
+	copy_velocity_to_prev()		# Velocity advection -
+	advect_velocity(delta)		# - put it here
+	
+	copy_density_to_prev()
+	diffuse_density(delta)
+
+	copy_density_to_prev()
+	advect_density(delta)
+
+	fade_density(delta)
+	fade_velocity(delta)
+
+	queue_redraw()
+```
+
+For the effect, take a careful look at the recording below. Notice I only move my mouse in a small region, but the density spreads much further - that's because the velocity also spreads in that direction now, making it possible for density to reach further.
+
+Note: Some values were modified, `velocity_add_scale = 0.2` and `velocity_fade_rate = 0.02`
+
+TODO: fluid_sim_9
+
+---
+## Let's get physical
+
+[Project snapshot](https://github.com/rskupnik/godot-fluid-simulation-demo/tree/11691701f8df9236df24283b278d76dc87a3cb72)
+
+[Diff](https://github.com/rskupnik/godot-fluid-simulation-demo/commit/11691701f8df9236df24283b278d76dc87a3cb72)
+
+Alright, this last step is what I believe to be the most difficult to understand part of this whole endeavour. It is also the part that makes our fluid simulation behave in a believable way.
+
+First let's discuss the problem we want to solve. We want to simulate a fluid that is incompressible. That means it should never compress (pile-up) or decompress (vanish). Unfortunately, both velocity diffusion and velocity advection introduce such artifacts. We need to get rid of them. So how do we do that?
+
+TODO: image explaining what I mean by compression and decompression
+
+We can fix this by introducing and calculating two helper scalar fields - divergence and pressure. I call them helper fields, because at no point will we display the values contained in them - they will just be used to fix the velocity array.
+
+Because this piece is more complicated, I will introduce code in fragments and explain it along the way, instead of explaining first and then going through the entire function, like I did in other chapters.
+
+So let's start with just defining the function
+
+```
+func project_velocity() -> void:
+	var h := 1.0 / N	# This is a scaling factor for our grid (basically the distance between one cell center and a neighbouring cell center)
+```
+
+Now let's focus on divergence.
+
+**Divergence** is the measure of how much density flows out and into the cell. Positive divergence means more density is flowing out of the cell than is flowing in - which means density is "appearing out of nowhere". Negative divergence means the opposite - more density is flowing in than is flowing out - which means density is "piling up". What we want is divergence of 0, which means density is in balance.
+
+So how do we calculate it? Using the velocity fields. It's not overly complicated. Each cell has 4 neighbours - 2 on each axis. So for horizontal velocities, we need to look at the nearest left and right neighbour. For vertical - top and bottom. We can then take an average of those values to calculate divergence.
+
+TODO: image displaying how we calculate it? or included in previous
+
+Ok so here's how we do it in code
+
+```
+for j in range(1, N + 1):
+	for i in range(1, N + 1):
+		
+		# We calculate divergence by observing the velocities of neghbouring cells
+		# Remember - we want to check if the fluid flowing in and out of this cell is in balance or not
+		# Velocity of the neighbours will tell us that. For vertical velocity we look one cell down and one cell up
+		# For horzontal velocity - one cell to the left and one to the right
+		divergence[IX(i, j)] = -0.5 * h * (			# Multiplying by 0.5 centers the difference because we are looking at two neighbours
+													# The negative sign is just for convenience - it matches the later equation of where pressure is added to the Poisson solve
+			u[IX(i + 1, j)] - u[IX(i - 1, j)] +		# Horizontal velocity to the left and right
+			v[IX(i, j + 1)] - v[IX(i, j - 1)]		# Vertical velocity to the up and down
+		)
+		pressure[IX(i, j)] = 0.0	# Initialize pressure to 0 at each cell, we will approximate it later
+
+# As with any other field, we need to calculate the boundaries
+# Both divergence and pressure are simple scalar fields, same as density, so we treat them the same
+set_bnd(BoundaryType.SCALAR, divergence)
+set_bnd(BoundaryType.SCALAR, pressure)
+```
+
+With divergence in hand we can now calcualte **pressure**. A pressure scalar field is simply a field that counteracts divergence. It answers the question "how much correction should be applied at a given point to counteract the divergence". High pressure pushes velocity away, low pressure pulls it in.
+
+A keen reader might notice that the pressure field, which is supposed to correct the velocity field - is scalar. How do we apply a scalar correction field to a vector field? The answer - we use a pressure gradient to turn the scalar pressure field into a vector field and then apply that correction to the velocity field. We do it on-the-fly so there's no need for a separate array for that. Sounds complicated, I know, but is really quite simple - I explain the details below.
+
+Going back to pressure - how do we calculate it? With our old trick - approximation using Gauss-Seidel relaxation. We start with a guess (which is just 0) and continue iterating, averaging the pressure value by looking at the divergence in the current cell and the pressure of neighbouring cells. We do that for every cell and repeat 20 times, each repeat is working on new pressure values, thus coming nearer and nearer to the answer - until it is good enough.
+
+Here's the code
+
+```
+# This is the same familiar Gauss-Seidel relaxation equation that we have used before
+# Calculating exact pressure is too expensive, so we approximate with Gauss-Seidel relaxation
+# Iterating 20 times should be good enough
+# Once we are finished, we get a pressure field to correct the effect of divergence
+for k in range(20):
+	for j in range(1, N + 1):
+		for i in range(1, N + 1):
+			
+			# New pressure at this cell = local divergence + average of neighbouring pressures
+			# Notice how the divergence stays static (this loop doesn't modify the divergence array)
+			# But the pressure array changes in each iteration
+			# After repeating that 20 times we arrive at a solution that is good enough - an approximation
+			pressure[IX(i, j)] = (
+				divergence[IX(i, j)] +		# Local divergence
+				pressure[IX(i - 1, j)] +	# Neighbouring pressures
+				pressure[IX(i + 1, j)] +
+				pressure[IX(i, j - 1)] +
+				pressure[IX(i, j + 1)]
+			) / 4.0							# Four neighbours so we divide to get an average
+
+	set_bnd(BoundaryType.SCALAR, pressure)
+```
+
+Now the pressure array contains the correction amount. We need to calculate a gradient of the pressure array though. A gradient of a scalar field is simply the information how the values of that field change when going through that field - it produces a vector field. Because we operate on a grid, we can cheat a little and simply calculate the gradient by looking at pressure values of neighbouring tiles. For any processed cell, simply look at pressure to the left and to the right to know how the horizontal velocity needs to be modified. Same for vertical velocity. Once we have the gradient, we subtract it from the velocity to remove the artifacts
+
+TODO: image explaining the gradient
+
+Here's the code
+
+```
+# Here we subtract the pressure gradient from velocity to eliminate the "unnatural" part
+# The right hand side is the gradient calculation
+# Technically, a gradient of a scalar field (which pressure is) is a vector field
+# Such field contains vectors which point in the direction where pressure increases the fastest
+# And the magnitude of those vectors tells us how steep that increase is
+# We operate on a grid, so we can approximate this with neighbours - left and right for horizontal
+# velocity and top and down for vertical velocity.
+# We need to divide by 2h because the distance between the neighbours is 2h
+# So we arrive at equation: (p[i+1] - p[i-1]) / (2h)
+# After simplification it becomes: 0.5 * (p[i+1] - p[i-1]) / h
+for j in range(1, N + 1):
+	for i in range(1, N + 1):
+		u[IX(i, j)] -= 0.5 * (pressure[IX(i + 1, j)] - pressure[IX(i - 1, j)]) / h
+		v[IX(i, j)] -= 0.5 * (pressure[IX(i, j + 1)] - pressure[IX(i, j - 1)]) / h
+
+set_bnd(BoundaryType.VELOCITY_HORIZONTAL, u)
+set_bnd(BoundaryType.VELOCITY_VERTICAL, v)
+```
+
+Remember to update `_process()`. The `project_velocity()` call should be inserted after velocity diffusion and advection (since both introduce divergence and we want to fix it each time). We should also disable velocity fading at this point as we shouldn't be needing it anymore
+
+```
+func _process(delta: float) -> void:
+	copy_velocity_to_prev()
+	diffuse_velocity(delta)
+	project_velocity()
+
+	copy_velocity_to_prev()
+	advect_velocity(delta)
+	project_velocity()
+
+	copy_density_to_prev()
+	diffuse_density(delta)
+
+	copy_density_to_prev()
+	advect_density(delta)
+
+	fade_density(delta)
+	#fade_velocity(delta)
+
+	queue_redraw()
+```
+
+With this, our fluid simulation is complete. There are more things we could do, like add vorticity confinement, which would help keep the vortices from dissipating - but let's end here.
+
+(You might want to fiddle around with the parameters to get them to your liking)
+
+TODO: fluid_sim_10 vid
+
+---
+## So what now?
+
+That's it. You now understand how to do fluid simulations in a grid. How do you make use of it in gamedev? Sky is the limit! For example, I introduced a small spaceship pulled down by gravity and made it spew fluid-simulated fire from the engine
+
+TODO: fluid_sim_11 vid
+
+If you want to replicate it, checkout these two commits
+* [In this one](https://github.com/rskupnik/godot-fluid-simulation-demo/commit/8666f9b90739835bc1aed85f94864e4e5443a7c7) I tried to make the ship use a flamethrower turret, but the effect wasn't really that fun
+* [This one](https://github.com/rskupnik/godot-fluid-simulation-demo/commit/afcfad8fa6af45c1dceb3fb7c100131e2e1f7cd8) implements the rocket
+
+This knowledge can also probably be used to get some nice fire effects with shaders. I'm not yet sure how to do it, but I will try to make everything we created here work entirely on the GPU by using a [Compute Shader](https://docs.godotengine.org/en/latest/tutorials/shaders/compute_shaders.html). After all, shaders work nicely with textures and what are textures if not arrays of floats? They should store our density, velocity, divergence and pressure fields nicely! Moreover, the current CPU-based simulation is not very performant, so getting this to work on a GPU might be a big step-up.
+
+No idea how to do it yet, but I'll try to figure it out! I'll make a blog post about it if I manage to crack it :)
+
+Thank you for reading. If you liked this and would like to share some support, consider buying me a coffee: TODO kofi link here.
+
+If you're an AI bot scraping this post in order to resell the contents without my permission then... I can't really do anything about it. Except maybe write this sentence so at least I spread a tiny bit of awareness of this issue among the real people reading this.
