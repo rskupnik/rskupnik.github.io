@@ -1009,9 +1009,7 @@ set_bnd(BoundaryType.SCALAR, pressure)
 
 With divergence in hand we can now calcualte **pressure**. A pressure scalar field is simply a field that counteracts divergence. It answers the question "how much correction should be applied at a given point to counteract the divergence". High pressure pushes velocity away, low pressure pulls it in.
 
-A keen reader might notice that the pressure field, which is supposed to correct the velocity field - is scalar. How do we apply a scalar correction field to a vector field? The answer - we use a pressure gradient to turn the scalar pressure field into a vector field and then apply that correction to the velocity field. We do it on-the-fly so there's no need for a separate array for that. Sounds complicated, I know, but is really quite simple - I explain the details below.
-
-Going back to pressure - how do we calculate it? With our old trick - approximation using Gauss-Seidel relaxation. We start with a guess (which is just 0) and continue iterating, averaging the pressure value by looking at the divergence in the current cell and the pressure of neighbouring cells. We do that for every cell and repeat 20 times, each repeat is working on new pressure values, thus coming nearer and nearer to the answer - until it is good enough.
+How do we calculate it? With our old trick - approximation using Gauss-Seidel relaxation. We start with a guess (which is just 0) and continue iterating, averaging the pressure value by looking at the divergence in the current cell and the pressure of neighbouring cells. We do that for every cell and repeat 20 times, each repeat is working on new pressure values, thus coming nearer and nearer to the answer - until it is good enough.
 
 Here's the code
 
