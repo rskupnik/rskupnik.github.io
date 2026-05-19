@@ -18,6 +18,24 @@ $avocado-accent-color: #568203;
   box-sizing: border-box;
 }
 
+video {
+  width: 50%;
+  max-width: 100%;
+  margin: auto;
+  display: block;
+  margin-bottom: 30px;
+  margin-top: 30px;
+}
+
+.centered-img {
+  width: 50%;
+  max-width: 100%;
+  margin: auto;
+  display: block;
+  margin-bottom: 30px;
+  margin-top: 30px;
+}
+
 body {
   background-color: $site-background-color;
   border-top: 5px solid $contrast-color;

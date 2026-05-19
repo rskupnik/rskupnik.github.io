@@ -6,7 +6,7 @@ build-old:
 run:
     rm -rf _site || true
     rm -rf .jekyll-cache || true
-    docker run --rm -p 4000:4000 -v "$PWD:/srv/jekyll:Z" jekyll/jekyll:4.2.2 jekyll serve --incremental
+    docker run --rm -p 4000:4000 -v "$PWD:/srv/jekyll:Z" jekyll/jekyll:4.2.2 jekyll serve --watch --force_polling
 
 build:
     docker buildx create --use
