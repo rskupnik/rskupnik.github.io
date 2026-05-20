@@ -4,7 +4,7 @@ title: About
 ---
 
 ![A picture of me]({{site.baseurl}}/public/images/me.jpg){: class="me-image" loading="lazy"}
-My name is Radosław Skupnik, I live in Poland, and I'm a self-taught software engineer and a computer enthusiast.
+My name is Radek, I live in Poland, and I'm a self-taught software engineer and a computer enthusiast.
 
 When I started, I had fun with *Turbo Pascal*. I was 12 back then and the year was 2001, so my greatest achievement was a RAT application which I used to prank my friend three houses down the road over LAN (yeah, houses on the street were joined in a single LAN back then). Ahh, those were the times...
 

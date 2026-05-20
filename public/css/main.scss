@@ -141,12 +141,24 @@ footer {
   text-align: center;
 }
 
+#kofi-banner {
+  width: 50%;
+  display: block;
+  margin: auto;
+}
+
 @media screen and (max-width: 480px) {  /* Apply padding only on screens less than 480px */
   .me-image {
     display: block;
     width: 250px;
     margin: auto;
     padding-bottom: 20px;
+  }
+
+  #kofi-banner {
+    width: 100%;
+    display: block;
+    margin: auto;
   }
 }
 
