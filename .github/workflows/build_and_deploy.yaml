@@ -28,8 +28,8 @@ jobs:
         run: |
           docker buildx build \
             --platform linux/arm64 \
-            --cache-from type=local,src=/mnt/docker-cache \
-            --cache-to type=local,dest=/mnt/docker-cache,mode=max \
+          #  --cache-from type=local,src=/mnt/docker-cache \
+          #  --cache-to type=local,dest=/mnt/docker-cache,mode=max \
             --load \
             -t blog \
             -f Dockerfile .
